@@ -1,0 +1,31 @@
+﻿.collapsible-header-button { margin-top:-52px; margin-right:-12px; float:right; }
+.setting { clear:both; }
+.setting .name { float:left; width:300px; }
+.setting .name div { width:98%; }
+.setting .value { float:left; width:300px; }
+.setting .value div { width:98%; }
+.setting .delete { margin-left: 0px; float:left; }
+.validation-summary-errors { font-weight:bold; color:Red; }
+div.machines { float:left; }
+.save-publish { margin: -12px -8px 0px -8px; }
+.save-publish .ui-grid-a { width:250px; }
+.save-publish .ui-grid-b { width:375px; }
+.save-publish .ui-grid-c { width:500px; }
+.save-publish .ui-grid-d { width:625px; }
+.save-publish .ui-grid-e { width:750px; }
+.save-publish .ui-btn { width: 90%; }
+.save-publish a { width: 120px; }
+li a.submit-link { float:right; margin-top:-8px; }
+.narrow-center-column ui-block-a { width: 40%; }
+.narrow-center-column ui-block-b { width: 20%; }
+.narrow-center-column ui-block-c { width: 40%; }
+.store-status { font-size:11px; }
+.Added { background-color: #99EE99; }
+.Changed { background-color: #FFFF99; }
+.Deleted { background-color: #EE9999; }
+.last-etag { font-size: .75em;font-family: "Consolas";padding-top: 5px; }
+.stale, .current { padding-left: 5px;cursor: pointer; }
+.stale.writable { font-weight: bold;color: red; }
+.current.writable { color: green; }
+.replication-status-info { display: none;font-family: "Consolas";font-size: .75em;overflow: visible;text-wrap: none; }
+#addRow { width: 200px;position: absolute;top: 240px;left: 380px;}

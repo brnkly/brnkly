@@ -1,0 +1,17 @@
+﻿@using Brnkly.Framework.Administration.Models;
+@model string
+@{
+    ViewBag.Title = "Raven config";
+}
+
+<h2>Raven config</h2>
+
+@using (Html.BeginForm("GetFromStore", "RavenConfig", FormMethod.Get))
+{
+    <div style="float:left;width:150px;margin-right:10px;"><input type="text" name="serverName" data-theme="d" data-inline="true" placeholder="Server" value="@ViewBag.ServerName" /></div>
+    <div style="float:left;width:150px;margin-right:10px;"><input type="text" name="storeName" data-theme="d" data-inline="true" placeholder="Store" value="@ViewBag.StoreName" /></div>
+    <div style="float:left;width:500px;margin-right:10px;"><input type="text" name="path" data-theme="d" data-inline="true" placeholder="Path" value="@ViewBag.Path" /></div>
+    <div style="float:left;width:100px;"><input type="submit" value="Submit" data-theme="d" data-inline="true" /></div>
+}
+
+<textarea data-theme="d" style="font-family:Consolas,Courier;font-size:small;">@Html.Raw(Model)</textarea>

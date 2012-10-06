@@ -1,0 +1,10 @@
+﻿@using System.Collections.ObjectModel;
+@using Brnkly.Framework.Administration.Models;
+@model string
+<div class="machines">
+    @Html.DropDownList(
+        "machineName",
+        new SelectList(this.ViewBag.Machines, "Value", "Key", Model),
+        string.Empty,
+        new { data_role = "none", @class = "submit-dropdown" })
+</div>

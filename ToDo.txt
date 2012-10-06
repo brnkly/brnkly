@@ -1,0 +1,20 @@
+- Change logging to NLog and remove EntLib pkgs
+- Rationalize Log and LogBuffer
+
+- Allow Raven instances to run on different ports.
+- Put service bus config and message type declarations into a Raven doc?
+- Figure out assembly scanning - currently limits message types to Brnkly assemblies.
+- Allow bus binding to be configurable by message type.
+- Allow running without having perf coutners installed.
+- Add IMessage and MessageHandler<T> so context stuff is properties.
+- Allow subs by doc id prefix.
+- Allow containers other than unity.
+- Implement authz.
+- Add store listener to update LastModifiedAtUtc on each save.
+
+
+Workgroup machine setup for install scripts to work:
+
+  winrm set winrm/config/client `@`{TrustedHosts=`"<local>`"`}
+  winrm quickconfig
+  netmsmqactivator set to automatic start

@@ -1,0 +1,34 @@
+﻿@using Brnkly.Framework.Administration.Models;
+@model LogicalInstanceEditModel
+
+<div class="ui-body ui-body-b">
+    <h4>@Model.Name</h4>
+
+    <div class="collapsible-header-button">
+        @Html.ActionLink(
+            "Delete logical instance " + Model.Name, 
+            "DeleteLogicalInstance",
+            new { applicationName = ViewBag.ApplicationName, logicalInstanceName = Model.Name },
+            new { data_theme = "e", data_role = "button", data_icon = "delete", data_iconpos = "notext", data_inline = "true" })
+    </div>
+    
+    @foreach (var machine in Model.Machines)
+    {
+        <div>
+            @machine.Name
+            [ @Html.ActionLink(
+                "Delete", 
+                "DeleteMachine",
+                new { applicationName = ViewBag.ApplicationName, logicalInstanceName = Model.Name, machineName = machine.Name })
+            ]
+        </div>
+    }
+
+    @using (Html.BeginForm("AddMachine", "Applications")) {
+        <div data-role="fieldcontain" class="ui-hide-label">
+            @Html.Partial("MachineDropDown", string.Empty)
+            <input type="hidden" name="logicalInstanceName" value="@Model.Name" />
+            <input type="hidden" name="applicationName" value="@ViewBag.ApplicationName" />
+        </div>
+    }
+</div>

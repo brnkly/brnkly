@@ -1,0 +1,20 @@
+﻿@using Brnkly.Framework.Administration.Models;
+@model RavenStoreEditModel
+
+<div data-role="collapsible" data-theme="c" data-content-theme="c" data-collapsed="false" data-store="@Model.Name">
+    <h3><span class="@Model.PendingChange">@Model.Name</span></h3>
+    @Html.HiddenFor(m => m.Name)
+    @Html.HiddenFor(m => m.PendingChange)
+
+    <div style="clear:both;">
+        <div style="float:left;width:175px;">Server</div>
+        <div style="float:left;width:150px;">Status</div>
+        <div style="float:left;width:200px;">Use for</div>
+        <div style="float:left;width:300px;">Replicate to</div>
+        <hr style="clear:both;"/>
+    </div>
+
+    @Html.EditorFor(m => m.Servers, new { StoreName = Model.Name })
+
+    <div style="clear:both;">&nbsp;</div>
+</div>

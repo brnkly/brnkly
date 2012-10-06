@@ -1,0 +1,41 @@
+﻿@using Brnkly.Framework.Administration.Models;
+@model CacheSettingsEditModel
+@{
+    ViewBag.Title = "Cache settings";
+}    
+
+<h2>Cache settings</h2>
+
+@using (Html.BeginForm("Save", "CacheSettings"))
+{
+    <div class="ui-bar ui-bar-c save-publish">
+        <fieldset class="ui-grid-a">
+            <div class="ui-block-a">
+                <button type="submit" 
+                        onclick="$(this).closest('form').attr('action', '@Url.Action("Publish", "CacheSettings")');" 
+                        data-theme="b" data-icon="check" data-iconpos="left" data-inline="true">Publish</button>
+            </div>
+            <div class="ui-block-b"><button type="submit" data-theme="d">Save</button></div>
+        </fieldset>
+    </div> 
+    
+    <div class="ui-bar ui-bar-c">
+        <fieldset class="ui-grid-a">
+            @Html.HiddenFor(m => m.Id)
+            @Html.ValidationSummary()
+
+            <div data-theme="c" data-collapsed="false">
+                <div class="setting">
+                    <div class="name">Application</div>
+                    <div class="value">Output Caching</div>
+                    <div class="value">Raven Aggressive Data Caching</div>
+                    <div style="clear:both;">&nbsp;</div>
+                </div>
+                @for (int index = 0; index < Model.CacheParametersPerInstance.Count; index++)
+                { 
+                    @Html.EditorFor(m => m.CacheParametersPerInstance[index], "setting");
+                }
+            </div>
+        </fieldset>
+    </div>
+}                       

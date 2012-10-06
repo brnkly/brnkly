@@ -1,0 +1,43 @@
+﻿@using System.Diagnostics;
+@using Brnkly.Framework.Administration.Models;
+@model EnvironmentConfigEditModel
+
+<h4>Service bus</h4>
+<ul>
+@foreach (var application in Model.Applications)
+{
+    <li>
+        <b>@application.Name</b>
+        <ul>
+            @foreach (var logicalInstance in application.LogicalInstances)
+            {
+                <li>
+                    @logicalInstance.Name
+                    <ul>
+                        @foreach (var machine in logicalInstance.Machines)
+                        {
+                            <li>@machine.Name</li>
+                        }
+                    </ul>
+                </li>
+            }
+        </ul>
+    </li>
+}
+</ul>
+
+<h4>Machines</h4>
+<ul>
+@foreach (var group in Model.MachineGroups)
+{
+    <li>
+        <b>@group.Name</b>
+        <ul>
+            @foreach (var machine in group.MachineNames)
+            {
+                <li>@machine</li>
+            }
+        </ul>
+    </li>
+}
+</ul>

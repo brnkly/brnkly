@@ -1,0 +1,17 @@
+﻿@using Brnkly.Framework.Caching
+@using Brnkly.Framework.Web
+@model CacheParameters
+
+<div class="value">
+    @Html.DurationDropDownListFor(
+        m => m.OutputCacheDurationSeconds,
+        0, 5, 1800,
+        new { data_inline = "true", data_theme = "d" })
+</div>
+
+<div class="value">
+    @Html.DurationDropDownListFor(
+        m => m.RavenAggressiveDataCacheDurationSeconds,
+        0, 5, 1800,
+        new { data_inline = "true", data_theme = "d" })
+</div>

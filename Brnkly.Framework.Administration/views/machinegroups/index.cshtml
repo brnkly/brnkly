@@ -1,0 +1,20 @@
+﻿@using Brnkly.Framework.Administration.Models;
+@model EnvironmentConfigEditModel
+@{
+    ViewBag.Title = "Machines";
+}
+
+<h2>Machines</h2>
+
+@foreach (var group in Model.MachineGroups)
+{
+    Html.RenderPartial("Group", group);
+}
+
+@using (Html.BeginForm("AddGroup", "MachineGroups"))
+{
+    <div data-role="fieldcontain" class="ui-hide-label">
+        <label for="machine">Add new group:</label>
+        <input type="text" name="groupName" placeholder="Add new group" data-theme="d" />
+    </div>
+}

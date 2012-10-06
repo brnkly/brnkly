@@ -1,0 +1,19 @@
+﻿@using System.Diagnostics;
+@model SourceLevels
+
+@Html.DropDownListFor(
+    m => m,
+    new[] { 
+        SourceLevels.Error, 
+        SourceLevels.Warning, 
+        SourceLevels.Information, 
+        SourceLevels.Verbose,
+        SourceLevels.All 
+    }.Select(
+        level => new SelectListItem
+        {
+            Text = level.ToString(),
+            Value = null,
+            Selected = (Model == level),
+        }),
+    new { data_inline = "true", data_theme = "d" })

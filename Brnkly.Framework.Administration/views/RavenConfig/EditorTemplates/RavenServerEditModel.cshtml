@@ -1,0 +1,67 @@
+﻿@using Brnkly.Framework.Administration.Models;
+@model RavenServerEditModel
+
+<div style="clear:both;margin-top:10px;border-bottom: 1px solid #DFDFDF;" data-server="@Model.Name">
+    <div style="float:left;width:175px;">
+        <span class="@Model.PendingChange">@Model.Name</span>
+        @Html.HiddenFor(m => m.Name)
+        @Html.HiddenFor(m => m.PendingChange)
+        <div class="last-etag" data-server="@Model.Name"></div>
+    </div>
+    <div style="float:left;width:150px;">
+        <div class="store-status" data-server="@Model.Name" data-store="@ViewBag.StoreName"></div>
+    </div>
+    <div style="float:left;width:200px;">
+        <div style="float:left;margin-right:16px;" class="@Model.AllowReads.PendingChange">
+            @Html.CheckBoxFor(m => m.AllowReads.Value, new { data_role="none" })
+            @Html.LabelFor(m => m.AllowReads.Value, "Reads")
+        </div>
+        <div style="float:left;margin-right:16px;" class="@Model.AllowWrites.PendingChange">
+            @Html.CheckBoxFor(m => m.AllowWrites.Value, new { data_role = "none" })
+            @Html.LabelFor(m => m.AllowWrites.Value, "Writes")
+        </div>
+        <div style="clear:both;height:0px;">&nbsp;</div>
+    </div>
+    <div style="float:left;">
+        @{ 
+            var index = 0;
+            foreach(var destination in Model.ReplicationDestinations)
+            {
+                object checkBoxAttributes = 
+                    string.Equals(destination.Name, Model.Name, StringComparison.OrdinalIgnoreCase) ?
+                    (object)new { data_role="none", disabled = "true" } :
+                    (object)new { data_role="none" };
+                
+                <div style="float:left;margin-right:16px;">
+                    @Html.Hidden(
+                        string.Format("ReplicationDestinations[{0}].Name", index),
+                        destination.Name)
+                    <div class="@destination.Enabled.PendingChange">
+                        @Html.CheckBox(
+                            string.Format("ReplicationDestinations[{0}].Enabled.Value", index), 
+                            destination.Enabled.Value,
+                            checkBoxAttributes)
+                        @Html.Label(
+                            string.Format("ReplicationDestinations[{0}].Enabled.Value", index),
+                            destination.Name)
+                    </div>
+                    <div class="@destination.IsTransitive.PendingChange">
+                        @Html.CheckBox(
+                            string.Format("ReplicationDestinations[{0}].IsTransitive.Value", index), 
+                            destination.IsTransitive.Value,
+                            checkBoxAttributes)
+                        @Html.Label(
+                            string.Format("ReplicationDestinations[{0}].IsTransitive.Value", index),
+                            "Transitive")
+                    </div>
+                    <div class="replication-status @if(Model.AllowWrites.Value){<text>writable</text>}" data-destination="@destination.Name">
+                    </div>
+                    <pre class="replication-status-info"></pre>
+                </div>
+                index++;
+            }
+        }
+        <div style="clear:both;height:0px;">&nbsp;</div>
+    </div>
+    <div style="clear:both;height:0px;">&nbsp;</div>
+</div>
