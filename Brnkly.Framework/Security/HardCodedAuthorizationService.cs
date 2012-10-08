@@ -11,20 +11,16 @@ namespace Brnkly.Framework.Security
         {
             entries = new List<AuthorizationEntry>()
             {
-                new AuthorizationEntry("Administrators", "*", MatchResult.Allow),
+                new AuthorizationEntry("admin", "*", MatchResult.Allow),
+
+                //Examples
+                //new AuthorizationEntry("jdoe", "foo/bar/*", MatchResult.Allow),
+                //new AuthorizationEntry("jdoe", "foo/baz", MatchResult.Deny),
             };
         }
 
         public bool IsAuthorized(string userId, string activityId)
         {
-            // TODO: Remove this when we are loading authz data from the ops store.
-            // This is a short-term hack while we're using WB groups for authz.
-            if (PlatformApplication.Current.EnvironmentType == EnvironmentType.Development ||
-                PlatformApplication.Current.EnvironmentType == EnvironmentType.Test)
-            {
-                return true;
-            }
-
             var result = entries.Select(e => e.GetResult(userId, activityId)).FirstOrDefault();
             return (result == null) ? false : result.Value == MatchResult.Allow;
         }
