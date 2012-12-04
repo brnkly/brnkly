@@ -1,0 +1,66 @@
+﻿@error-color: #e80c4d;
+
+/* Bootstrap overrides */
+body {
+	padding-top: 80px;
+	padding-bottom: 40px;
+}
+
+.modal {
+	width: auto;
+}
+
+.modal.fade.in {
+	top: 75%;
+}
+
+/* Brnkly Raven styles */
+#message-container {
+	position:absolute;
+	top: 5em;
+	margin-left: -1em;
+	width: 99%;
+	z-index: 100000000;
+}
+
+#message, 
+#working {
+	width: 40%;
+	margin: 0.1em auto 0 auto;
+	display: none;
+	text-align: center;
+}
+
+.raven-store-instance {
+	margin-top: 0.5em;
+}
+
+.raven-repl-dest {
+	float: left;
+	margin-right: 1em;
+}
+
+/* styles for validation helpers */
+.field-validation-error {
+    color: @error-color;
+    font-weight: bold;
+}
+
+.field-validation-valid {
+    display: none;
+}
+
+input[type="text"].input-validation-error,
+input[type="password"].input-validation-error {
+    border: solid 1px @error-color;
+}
+
+.validation-summary-errors {
+    color: @error-color;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.validation-summary-valid {
+    display: none;
+}

@@ -1,0 +1,110 @@
+﻿@model Brnkly.Raven.Admin.Models.RavenConfigModel
+@{ ViewBag.Title = "Raven replication"; }
+
+@section SectionNav {
+    @{ Html.RenderPartial("_RavenSectionNav"); }
+}
+
+@section Scripts {
+    @Scripts.Render("~/scripts/ravenconfig")
+}
+
+<div id="message-container">
+    <div id="message" class="alert"></div>
+    <div id="working" class="alert alert-info">Working...</div>
+</div>
+<div class="navbar" style="margin-top:1em;">
+    <div class="btn-toolbar">
+        <button type="button" class="btn btn-primary" data-bind="click: brnkly.publish">Publish</button>
+        <button type="button" class="btn" data-bind="click: brnkly.save">Save</button>
+        <a href="#add-store-modal" role="button" class="btn" data-toggle="modal">Add store...</a>
+    </div>
+</div>
+
+@Html.Partial("_AddStoreModal")
+@Html.Partial("_AddInstanceModal")
+
+<div data-bind="template: { name: 'raven-stores-template', data: brnkly }"></div>
+
+
+<script type="text/html" id="raven-stores-template">
+
+    <div id="raven-stores" class="accordian" data-bind="foreach: { data: stores(), as: 'store' }">
+
+        <div class="accordian-group well well-small" data-bind="attr: { id: store.name() }">
+
+            <div class="accordian-heading">
+                <a class="accordian-toggle" data-toggle="collapse" data-parent="raven-stores"
+                    data-bind="attr: { 'href': '#'+store.name()+'-content' }">
+                    <strong><span data-bind="text: store.name() + ' store'"></span></strong>
+                </a>
+                <button type="button" class="close" data-bind="click: brnkly.removeStore">×</button>
+            </div>
+
+            <div class="accordian-body collapse in" data-bind="attr: { id: store.name()+'-content' }">
+                <div class="accordian-inner">
+
+                    <!--ko foreach: { data: store.instances(), as: 'instance' }-->
+                    <div class="row-fluid raven-store-instance">
+
+                        <div class="span2">
+                            <span data-bind="text: instance.displayName(),
+                                             attr: { title: instance.uri() }"></span>
+                        </div>
+
+                        <div class="span2">
+                            <div class="btn-group">
+                                <button class="btn btn-mini"
+                                    data-bind="checkbox: instance.allowReads,
+                                               attr: { title: instance.allowReads() ? 'Allow reads' : 'Do not allow reads' }"> 
+                                    <i data-bind="css: { 'icon-ok': instance.allowReads(), 
+                                                         'icon-none': !instance.allowReads() }"></i>
+                                    R
+                                </button>
+                                <button class="btn btn-mini"
+                                    data-bind="checkbox: instance.allowWrites,
+                                               attr: { title: instance.allowWrites() ? 'Allow writes' : 'Do not allow writes' }">
+                                    W
+                                    <i data-bind="css: { 'icon-ok': instance.allowWrites(), 
+                                                         'icon-none': !instance.allowWrites() }"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="span8">
+                            <!--ko foreach: instance.destinations()-->
+                            <div class="raven-repl-dest">
+                                <div class="btn-group">
+                                    <button class="btn btn-mini" 
+                                        data-bind="checkbox: replicate, 
+                                                   attr: { disabled : instance.uri() == uri(),
+                                                           title: 'Replication ' + (replicate() ? 'on' : 'off') }">
+                                        <i data-bind="css: { 'icon-play': replicate(), 
+                                                             'icon-none': !replicate() }"></i>
+                                        <span data-bind="text: displayName()"></span>
+                                    </button>
+                                    <button class="btn btn-mini" 
+                                        data-bind="checkbox: isTransitive, 
+                                                   attr: { disabled : instance.uri() == uri(),
+                                                           title: 'Transitive ' + (isTransitive() ? 'on' : 'off') }">
+                                        T
+                                        <i data-bind="css: { 'icon-share-alt': isTransitive(), 
+                                                             'icon-none': !isTransitive() }"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <!--/ko-->
+                        </div>
+                    </div>
+                    <!--/ko-->
+                    <div class="row-fluid raven-store-instance">
+                        <div class="span2">
+                            <a href="#add-instance-modal" role="button" data-toggle="modal"
+                                data-bind="click: brnkly.setActiveStoreName">Add instance...</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+       </div>
+    </div>
+</script>

@@ -11,7 +11,7 @@
 - Allow containers other than unity.
 - Implement authz.
 - Add store listener to update LastModifiedAtUtc on each save.
-
+- Create and upload NuGet package on each build.
 
 Workgroup machine setup for install scripts to work:
 

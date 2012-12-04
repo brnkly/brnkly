@@ -1,4 +1,0 @@
-﻿<%@ ServiceHost
-        Service="Brnkly.Framework.ServiceBus.Wcf.BusReceiver,Brnkly.Framework"
-        Factory="Brnkly.Framework.ServiceBus.Wcf.BusReceiverServiceHostFactory,Brnkly.Framework" 
-%>
