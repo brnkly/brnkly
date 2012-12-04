@@ -4,12 +4,7 @@ namespace Brnkly.Raven.Admin.Controllers
 {
     public class RavenAdminController : Controller
     {
-        public ActionResult Replication()
-        {
-            return View();
-        }
-
-        public ActionResult Indexes()
+        public ActionResult Index()
         {
             return View();
         }

@@ -230,7 +230,7 @@
     <Content Include="Areas\Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Areas\Raven\Views\RavenAdmin\Replication.cshtml" />
+    <Content Include="Areas\Raven\Views\RavenAdmin\Index.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

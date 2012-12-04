@@ -11,7 +11,7 @@ namespace Brnkly.Raven.Admin
             context.MapRoute(
                 name: AreaName + "-Default",
                 url: "admin/raven/{action}/{id}",
-                defaults: new { controller = "RavenAdmin", action = "Replication", id = UrlParameter.Optional });
+                defaults: new { controller = "RavenAdmin", action = "Index", id = UrlParameter.Optional });
         }
     }
 }
