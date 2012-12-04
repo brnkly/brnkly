@@ -1,29 +1,29 @@
-﻿<div id="add-instance-modal" class="modal hide fade">
+﻿<div id="add-instance-modal" class="modal hide fade" data-bind="with: brnkly.raven.activeStore()">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h3>Add <span data-bind="text: brnkly.activeStoreName()"></span> instance</h3>
+        <h3>Add <span data-bind="text: name"></span> instance</h3>
     </div>
     <div class="modal-body">
         <h4>Raven server location</h4>
         <div class="navbar">
             <div class="btn-group">
                 <button type="button" class="btn" 
-                    data-bind="radio: brnkly.newInstance.protocol, radioValue: 'http'">http</button>
+                    data-bind="radio: newInstance.protocol, radioValue: 'http'">http</button>
                 <button type="button" class="btn"
-                    data-bind="radio: brnkly.newInstance.protocol, radioValue: 'https'">https</button>
+                    data-bind="radio: newInstance.protocol, radioValue: 'https'">https</button>
             </div>
             <input class="span2" type="text" placeholder="Host name"
-                data-bind="value: brnkly.newInstance.host">
+                data-bind="value: newInstance.host">
             :
             <input class="span1" type="text" placeholder="Port"
-                data-bind="value: brnkly.newInstance.port">
+                data-bind="value: newInstance.port">
             /
             <input class="span2" type="text" placeholder="Virtual directory"
-                data-bind="value: brnkly.newInstance.virtualDirectory">
+                data-bind="value: newInstance.virtualDirectory">
        </div>
     </div>
     <div class="modal-footer">
         <a href="#" class="btn" data-dismiss="modal">Close</a>
-        <a href="#" class="btn btn-primary" data-bind="click: brnkly.addInstance">Add</a>
+        <a href="#" class="btn btn-primary" data-bind="click: addInstance">Add</a>
     </div>
 </div>

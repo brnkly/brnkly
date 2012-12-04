@@ -24,12 +24,12 @@ body {
   display: none;
   text-align: center;
 }
-.raven-store-instance {
-  margin-top: 0.5em;
+.raven-store-instance td {
+  vertical-align: top;
+  padding: 0.5em 1em 0 0;
 }
 .raven-repl-dest {
-  float: left;
-  margin-right: 1em;
+  padding-right: 1em;
 }
 /* styles for validation helpers */
 .field-validation-error {

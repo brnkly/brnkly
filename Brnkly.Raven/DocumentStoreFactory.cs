@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using Raven.Abstractions.Data;
+using Raven.Client;
 using Raven.Client.Document;
+using Raven.Client.Extensions;
 using Raven.Client.Listeners;
 
 namespace Brnkly.Raven
@@ -12,11 +15,54 @@ namespace Brnkly.Raven
             new ConcurrentBag<DocumentStoreWrapper>();
         private RavenConfig RavenConfig = new RavenConfig();
 
-        public Uri OperationsUri { get; private set; }
+        public Uri OperationsUrl { get; private set; }
 
-        public DocumentStoreFactory(Uri operationsUri)
+        public DocumentStoreFactory(Uri operationsUrl)
         {
-            this.OperationsUri = operationsUri;
+            var trimmedUrl = operationsUrl.TrimTrailingSlash();
+            EnsureUriPathIncludesDatabase(trimmedUrl);
+            this.OperationsUrl = trimmedUrl;
+        }
+
+        public DocumentStoreFactory Initialize()
+        {
+            var readOnlyOpsStore = new DocumentStoreWrapper(
+                this.OperationsUrl.GetDatabaseName(), 
+                AccessMode.ReadOnly);
+            AllStores.Add(readOnlyOpsStore);
+            this.UpdateInnerStore(readOnlyOpsStore);
+
+            readOnlyOpsStore.DatabaseCommands.EnsureDatabaseExists(
+                this.OperationsUrl.GetDatabaseName());
+
+            UpdateRavenConfig(readOnlyOpsStore);
+            UpdateAllStores();
+            return this;
+        }
+
+        private void UpdateRavenConfig(IDocumentStore opsStore)
+        {
+            using (var session = opsStore.OpenSession())
+            {
+                var config = session.Load<RavenConfig>(RavenConfig.LiveDocumentId);
+                if (config != null)
+                {
+                    RavenConfig = config;
+                }
+            }
+        }
+
+        private void UpdateAllStores()
+        {
+            //LogBuffer.Current.LogPriority = LogPriority.Application;
+
+            lock (this.AllStores)
+            {
+                foreach (var store in AllStores)
+                {
+                    this.UpdateInnerStore(store);
+                }
+            }
         }
 
         public DocumentStoreWrapper GetOrCreate(
@@ -34,27 +80,11 @@ namespace Brnkly.Raven
                 return existingStore;
             }
 
-            var newStore = new DocumentStoreWrapper(this, name, accessMode);
+            var newStore = new DocumentStoreWrapper(name, accessMode);
             AllStores.Add(newStore);
-
             this.UpdateInnerStore(newStore);
 
             return newStore;
-        }
-
-        internal void UpdateAllStores(RavenConfig ravenConfig)
-        {
-            //LogBuffer.Current.LogPriority = LogPriority.Application;
-
-            lock (this.AllStores)
-            {
-                this.RavenConfig = ravenConfig ?? new RavenConfig();
-
-                foreach (var store in AllStores)
-                {
-                    this.UpdateInnerStore(store);
-                }
-            }
         }
 
         private void UpdateInnerStore(DocumentStoreWrapper wrapper)
@@ -65,6 +95,13 @@ namespace Brnkly.Raven
             try
             {
                 newInnerStore = this.CreateInnerStore(wrapper);
+
+                if (wrapper.IsInitialized &&
+                    wrapper.InnerStore.Url.Equals(newInnerStore.Url, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
                 newInnerStore.Initialize();
                 wrapper.InnerStore = newInnerStore;
                 wrapper.IsInitialized = true;
@@ -86,7 +123,7 @@ namespace Brnkly.Raven
         }
 
         private void LogException(
-            Exception exception, 
+            Exception exception,
             DocumentStoreWrapper wrapper,
             DocumentStore newInnerStore)
         {
@@ -94,7 +131,7 @@ namespace Brnkly.Raven
             string message = string.Format(
                 "The store '{0}' could not be initialized with " +
                 "the Url '{1}' due to the exception below. ",
-                newInnerStore.Identifier,
+                newInnerStore == null ? null : newInnerStore.Identifier,
                 newUrl);
 
             if (wrapper.IsInitialized &&
@@ -113,7 +150,7 @@ namespace Brnkly.Raven
 
         internal DocumentStore CreateInnerStore(DocumentStoreWrapper wrapper)
         {
-            var storeInstance = GetClosestStoreInstanceOrDefault(wrapper);
+            var storeInstance = GetClosestInstanceOrDefault(wrapper);
             var innerStore = CreateDocumentStore(storeInstance);
 
             if (wrapper.AccessMode == AccessMode.ReadOnly)
@@ -125,38 +162,48 @@ namespace Brnkly.Raven
             return innerStore;
         }
 
-        internal DocumentStore CreateDocumentStore(StoreInstance storeInstance)
+        internal DocumentStore CreateDocumentStore(Instance storeInstance)
         {
+            var databaseName = storeInstance.Url.GetDatabaseName();
             var store = new DocumentStore
             {
-                Identifier = storeInstance.DatabaseName,
-                DefaultDatabase = storeInstance.DatabaseName,
-                Url = storeInstance.Uri.ToString(),
-                // Guid.NewGuid() is okay because we don't care about recovering a tx after an app restart.
-                ResourceManagerId = Guid.NewGuid(),
+                Identifier = databaseName,
+                DefaultDatabase = databaseName,
+                Url = storeInstance.Url.ToString(),
                 Conventions =
                 {
                     FailoverBehavior = FailoverBehavior.AllowReadsFromSecondariesAndWritesToSecondaries
-                },
+                }
             };
 
             return store;
         }
 
-        private StoreInstance GetClosestStoreInstanceOrDefault(DocumentStoreWrapper wrapper)
+        private Instance GetClosestInstanceOrDefault(DocumentStoreWrapper wrapper)
         {
             var store = RavenConfig.Stores.SelectByName(wrapper.Name);
+            Instance instance = null;
             if (store != null)
             {
-                return store.GetClosestReplica(
+                instance = store.GetClosestReplica(
                     Environment.MachineName,
                     wrapper.AccessMode == AccessMode.ReadWrite);
             }
-            
-            return new StoreInstance(
-                new Uri(this.OperationsUri, wrapper.Name.ToLowerInvariant()),
-                true,
-                wrapper.AccessMode == AccessMode.ReadWrite);
+
+            instance = instance ?? 
+                new Instance
+                {
+                    Url = new Uri(this.OperationsUrl, wrapper.Name.ToLowerInvariant()),
+                    AllowReads = true,
+                    AllowWrites = wrapper.AccessMode == AccessMode.ReadWrite
+                };
+
+            return instance;
+        }
+
+        private void EnsureUriPathIncludesDatabase(Uri uri)
+        {
+            uri.GetDatabaseName(throwIfNotFound: true);
         }
     }
 }

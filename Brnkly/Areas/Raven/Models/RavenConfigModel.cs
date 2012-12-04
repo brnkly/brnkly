@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Collections.ObjectModel;
+using AutoMapper;
 
 namespace Brnkly.Raven.Admin.Models
 {
@@ -8,10 +9,12 @@ namespace Brnkly.Raven.Admin.Models
         public string Id { get; set; }
         public Collection<StoreModel> Stores { get; set; }
 
+        [IgnoreMap]
+        public Guid Etag { get; set; }
+
         public RavenConfigModel()
         {
-            this.Id = RavenConfig.DocumentId;
-            this.Stores = new Collection<StoreModel>();
+			this.Stores = new Collection<StoreModel>();
         }
     }
 }

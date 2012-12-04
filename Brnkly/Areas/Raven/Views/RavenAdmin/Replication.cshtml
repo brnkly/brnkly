@@ -1,0 +1,187 @@
+﻿@model Brnkly.Raven.Admin.Models.RavenConfigModel
+@{ ViewBag.Title = "Raven replication"; }
+
+@section SectionNav {
+    @{ Html.RenderPartial("_RavenSectionNav"); }
+}
+
+@section Scripts {
+    @Scripts.Render("~/scripts/brnkly-raven")
+}
+
+<div class="navbar" style="margin-top:1em;" data-bind="with: brnkly.raven">
+    <div class=".status-refresh-msg" style="float:right;font-size:x-small;margin-top:1em;" 
+         data-bind="text: 'Status refreshed at: ' + activeStore().statsRefreshedAt()"></div>
+    <div class="btn-toolbar">
+        <button type="button" class="btn btn-primary" 
+            data-bind="click: publish,
+                       attr: { disabled:      !hasEtag() || dirtyFlag.isDirty() },
+                       css:  { 'btn-primary': !dirtyFlag.isDirty() }">
+            Publish
+        </button>
+        <button type="button" class="btn" 
+            data-bind="click: save,
+                       attr: { disabled:      !dirtyFlag.isDirty() },
+                       css:  { 'btn-primary': dirtyFlag.isDirty() }">
+            Save
+        </button>
+        <button type="button" class="btn" 
+            data-bind="click: activeStore().updateTracers,
+                       attr: { disabled: activeStore().name == placeholderStore.name }">
+            Update tracers
+        </button>
+        <button type="button" class="btn" 
+            data-bind="click: removeActiveStore,
+                       attr: { disabled: activeStore().name == placeholderStore.name }">
+            Delete <span data-bind="text: activeStore().name"></span>
+        </button>
+    </div>
+</div>
+
+@Html.Partial("_AddStoreModal")
+@Html.Partial("_AddInstanceModal")
+
+<div data-bind="template: { name: 'raven-store-template', data: brnkly.raven.activeStore() }"></div>
+
+<script type="text/html" id="raven-store-template">
+
+    <div class="well well-small" data-bind="attr: { id: name }, visible: name.indexOf('...') == -1">
+
+        <div>
+            <h4><span data-bind="text: name + ' - replication'"></span></h4>
+        </div>
+
+        <table>
+            <tbody>
+                <!--ko foreach: { data: instances(), as: 'instance' }-->
+                <tr class="raven-store-instance">
+
+                    <td>
+                        <span data-bind="text: instance.displayName, attr: { title: instance.url }"></span>
+                    </td>
+
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-mini"
+                                data-bind="checkbox: instance.allowReads,
+                                           attr: { title: instance.allowReads() ? 'Allow reads' : 'Do not allow reads' }"> 
+                                <i data-bind="css: { 'icon-ok': instance.allowReads(), 
+                                                     'icon-none': !instance.allowReads() }"></i>
+                                R
+                            </button>
+                            <button class="btn btn-mini"
+                                data-bind="checkbox: instance.allowWrites,
+                                           attr: { title: instance.allowWrites() ? 'Allow writes' : 'Do not allow writes' }">
+                                W
+                                <i data-bind="css: { 'icon-ok': instance.allowWrites(), 
+                                                     'icon-none': !instance.allowWrites() }"></i>
+                            </button>
+                        </div>
+                    </td>
+
+                    <!--ko foreach: instance.destinations()-->
+                    <td class="raven-repl-dest">
+                        <div class="btn-group">
+                            <button class="btn btn-mini" 
+                                data-bind="checkbox: replicate, 
+                                           attr: { disabled : instance.url == url,
+                                           title: 'Replication ' + (replicate() ? 'on' : 'off') }">
+                                <i data-bind="css: { 'icon-play': replicate(), 
+                                                     'icon-none': !replicate() }"></i>
+                                <span data-bind="text: displayName"></span>
+                            </button>
+                            <button class="btn btn-mini" 
+                                data-bind="checkbox: isTransitive, 
+                                           attr: { disabled : instance.url == url,
+                                                   title: 'Transitive ' + (isTransitive() ? 'on' : 'off') }">
+                                <i data-bind="css: { 'icon-share-alt': isTransitive(), 
+                                                     'icon-none': !isTransitive() }"></i>
+                            </button>
+                        </div>
+                        <div>
+                            <span data-bind="text: status(), attr: { class: statusClass() }"></span>
+                        </div>
+                    </td>
+                    <!--/ko-->
+                    <td>
+                        <button type="button" class="close" 
+                            data-bind="click: $parent.removeInstance, 
+                                       attr: { title: 'Delete ' + url }">&times;</button>
+                    </td>
+                </tr>
+                <!--/ko-->
+                <tr>
+                    <td>
+                        <div class="row-fluid">
+                        <a href="#add-instance-modal" role="button" data-toggle="modal">
+                            Add instance...
+                        </a>
+                            </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="well well-small" data-bind="attr: { id: name }, visible: name.indexOf('...') == -1">
+        <div>
+            <h4><span data-bind="text: name + ' - indexing'"></span></h4>
+        </div>
+        <div data-bind="if: $data.stats">
+            <table>
+                <tbody>
+                    <!--ko foreach: { data: stats().indexing(), as: 'index' }-->
+                    <tr>
+                        <td>
+                            <span data-bind="text: name"></span>
+                        </td>
+                        <!--ko foreach: instances()-->
+                        <td class="raven-repl-dest">
+                            <div class="btn-group dropup">
+                                <a class="btn btn-mini dropdown-toggle" data-toggle="dropdown" href="#">
+                                    <span data-bind="text: displayName"></span>
+                                    <span class="caret"></span>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a href="#" data-bind="click: function() { index.copy(url()); }">
+                                            <i class="icon-pencil"></i> Copy
+                                        </a>
+                                    </li>
+                                    <!--ko if: index.fromInstanceUrl() -->
+                                    <li>
+                                        <a href="#" class="disabled" data-bind="
+                                            click: function() { index.paste(url(), index.name); }">
+                                            <i class="icon-pencil"></i>
+                                            Paste from <span data-bind="text: index.fromInstanceDisplayName()"></span>
+                                        </a>
+                                    </li>
+                                    <!--/ko-->
+                                    <li class="divider"></li>
+                                    <li>
+                                        <a href="#" data-bind="click: function() { index.reset(url()); }">
+                                            <i class="icon-pencil"></i> Reset
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" data-bind="click: function() { index.delete(url()); }">
+                                            <i class="icon-pencil"></i> Delete
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div><span class="label" 
+                                data-bind="text: status(),
+                                            css: { 'label-important': status() == 'Missing',
+                                                    'label-success': status() == 'Current',
+                                                    'label-warning': status() != 'Missing' && status() != 'Current' }"></span></div>
+                        </td>
+                        <!--/ko-->
+                    </tr>
+                    <!--/ko-->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</script>

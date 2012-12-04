@@ -53,7 +53,6 @@ namespace Brnkly.Raven
     /// </example>
     public sealed class DocumentStoreWrapper : IDocumentStore
     {
-        private DocumentStoreFactory factory;
         private Assembly assemblyToScanForIndexingTasks;
 
         public string Name { get; private set; }
@@ -62,15 +61,12 @@ namespace Brnkly.Raven
         internal DocumentStore InnerStore { get; set; }
 
         internal DocumentStoreWrapper(
-            DocumentStoreFactory factory,
             string name, 
             AccessMode accessMode = AccessMode.ReadOnly)
         {
-            factory.Ensure("factory").IsNotNull();
             name.Ensure("name").IsNotNullOrWhiteSpace();
 
             this.IsInitialized = false;
-            this.factory = factory;
             this.Name = name;
             this.AccessMode = accessMode;
         }

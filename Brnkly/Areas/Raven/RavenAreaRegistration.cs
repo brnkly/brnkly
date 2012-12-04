@@ -10,8 +10,8 @@ namespace Brnkly.Raven.Admin
         {
             context.MapRoute(
                 name: AreaName + "-Default",
-                url: "admin/raven/{controller}/{action}/{id}",
-                defaults: new { controller = "Replication", action = "Index", id = UrlParameter.Optional });
+                url: "admin/raven/{action}/{id}",
+                defaults: new { controller = "RavenAdmin", action = "Replication", id = UrlParameter.Optional });
         }
     }
 }

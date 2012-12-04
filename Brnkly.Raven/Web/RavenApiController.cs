@@ -3,9 +3,14 @@ using Raven.Client;
 
 namespace Brnkly.Raven.Web
 {
-    public class RavenApiController : ApiController
+    public abstract class RavenApiController : ApiController
     {
         public IDocumentSession RavenSession { get; set; }
+
+        protected RavenApiController()
+            : base()
+        {
+        }
 
         protected override void Dispose(bool disposing)
         {

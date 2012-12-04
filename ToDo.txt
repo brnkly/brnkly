@@ -18,3 +18,33 @@ Workgroup machine setup for install scripts to work:
   winrm set winrm/config/client `@`{TrustedHosts=`"<local>`"`}
   winrm quickconfig
   netmsmqactivator set to automatic start
+
+
+
+
+Input
+	Url rav1
+	Stats
+		LastDocEtag
+	Sources
+		Doc
+			Source rav2
+			LastDocumentEtag
+			@metadata[Last-Modified]
+		Doc
+			Source rav3
+			LastDocumentEtag
+			@metadata[Last-Modified]
+
+
+Output
+	Url rav1
+	LastDocumentEtag
+	Destinations
+		[each]
+			Url rav2
+			LastReplicatedAtUtc
+			LastDocumentEtagReceived
+			IsCurrent
+
+

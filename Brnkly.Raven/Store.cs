@@ -10,17 +10,25 @@ namespace Brnkly.Raven
         private static Random random = new Random();
 
         public string Name { get; private set; }
-        public Collection<StoreInstance> Instances { get; private set; }
+        public Collection<Instance> Instances { get; private set; }
 
         public Store(string name)
         {
             name.Ensure("name").IsNotNullOrWhiteSpace();
 
             this.Name = name;
-            this.Instances = new Collection<StoreInstance>();
+            this.Instances = new Collection<Instance>();
         }
 
-        public StoreInstance GetClosestReplica(string fromMachine, bool isForWriting = false)
+        public override string ToString()
+        {
+            return string.Format(
+                "{0}: {1} instances",
+                Name,
+                Instances == null ? 0 : Instances.Count);
+        }
+
+        public Instance GetClosestReplica(string fromMachine, bool isForWriting = false)
         {
             fromMachine.Ensure("fromMachine").IsNotNullOrWhiteSpace();
 
@@ -32,14 +40,14 @@ namespace Brnkly.Raven
             }
 
             var closestHosts = fromMachine.GetLongestMatches(
-                availableReplicas.Select(r => r.Uri.Host));
+                availableReplicas.Select(r => r.Url.Host));
             if (closestHosts.Count() > 1)
             {
                 var host =
                     ChooseHostByNumberSuffix(fromMachine, closestHosts) ??
                     ChooseRandomHostOnTie(closestHosts);
                 return availableReplicas.First(
-                    r => r.Uri.Host.Equals(host, StringComparison.OrdinalIgnoreCase));
+                    r => r.Url.Host.Equals(host, StringComparison.OrdinalIgnoreCase));
             }
             else
             {
@@ -48,7 +56,7 @@ namespace Brnkly.Raven
         }
 
         private static string ChooseHostByNumberSuffix(
-            string fromMachine, 
+            string fromMachine,
             IEnumerable<string> matches)
         {
             // TODO: Select using mod based on number of servers.

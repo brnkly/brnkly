@@ -13,14 +13,15 @@ namespace Brnkly
                     "~/Scripts/jquery-{version}.js",
                     "~/Scripts/bootstrap-{version}.js",
                     "~/Scripts/knockout-{version}.js", 
-                    "~/Scripts/knockout.mapping-latest.js"));
+                    "~/Scripts/knockout.mapping-latest.js",
+                    "~/Scripts/linq.js"));
 
-            bundles.Add(new ScriptBundle("~/scripts/ravenconfig")
+            bundles.Add(new ScriptBundle("~/scripts/brnkly-raven")
                 .Include(
                     "~/Areas/Raven/Scripts/KnockoutBootstrapCheckboxBinding.js",
                     "~/Areas/Raven/Scripts/KnockoutBootstrapRadioBinding.js",
                     "~/Areas/Raven/Scripts/KnockoutDirtyFlag.js",
-                    "~/Areas/Raven/Scripts/RavenConfig.js"));
+                    "~/Areas/Raven/Scripts/BrnklyRaven.js"));
 
             bundles.Add(new StyleBundle("~/content/bootstrap")
                 .Include(

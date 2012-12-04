@@ -144,11 +144,14 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\NinjectWebCommon.cs" />
     <Compile Include="App_Start\RavenAdminNinjectModule.cs" />
-    <Compile Include="Areas\Raven\Controllers\StoresController.cs" />
+    <Compile Include="Areas\Raven\Controllers\IndexingController.cs" />
+    <Compile Include="Areas\Raven\Controllers\RavenConfigApiControllerBase.cs" />
     <Compile Include="Areas\Raven\Controllers\ReplicationController.cs" />
-    <Compile Include="Areas\Raven\Models\DestinationModel.cs" />
+    <Compile Include="Areas\Raven\Controllers\RavenAdminController.cs" />
+    <Compile Include="Areas\Raven\Models\CopyIndexModel.cs" />
+    <Compile Include="Areas\Raven\Models\IndexModel.cs" />
     <Compile Include="Areas\Raven\Models\RavenConfigModel.cs" />
-    <Compile Include="Areas\Raven\Models\StoreInstanceModel.cs" />
+    <Compile Include="Areas\Raven\Models\InstanceModel.cs" />
     <Compile Include="Areas\Raven\Models\StoreModel.cs" />
     <Compile Include="Areas\Raven\RavenAreaRegistration.cs" />
     <Compile Include="Global.asax.cs">
@@ -163,7 +166,7 @@
     <Content Include="Areas\Raven\Scripts\KnockoutDirtyFlag.js" />
     <Content Include="Areas\Raven\Scripts\KnockoutBootstrapRadioBinding.js" />
     <Content Include="Areas\Raven\Scripts\KnockoutBootstrapCheckboxBinding.js" />
-    <Content Include="Areas\Raven\Scripts\RavenConfig.js" />
+    <Content Include="Areas\Raven\Scripts\BrnklyRaven.js" />
     <Content Include="Content\bootstrap-responsive-2.1.1.css" />
     <Content Include="Content\bootstrap-responsive-2.1.1.min.css" />
     <Content Include="Content\bootstrap-2.1.1.css" />
@@ -180,8 +183,8 @@
     <Content Include="Areas\Raven\Views\_ViewStart.cshtml" />
     <Content Include="Content\Site.less" />
     <Content Include="Areas\Raven\Views\Shared\_RavenSectionNav.cshtml" />
-    <Content Include="Areas\Raven\Views\Replication\_AddStoreModal.cshtml" />
-    <Content Include="Areas\Raven\Views\Replication\_AddInstanceModal.cshtml" />
+    <Content Include="Areas\Raven\Views\RavenAdmin\_AddStoreModal.cshtml" />
+    <Content Include="Areas\Raven\Views\RavenAdmin\_AddInstanceModal.cshtml" />
     <None Include="Scripts\jquery-1.8.2.intellisense.js" />
     <Content Include="Scripts\bootstrap-2.1.1.js" />
     <Content Include="Scripts\bootstrap-2.1.1.min.js" />
@@ -191,6 +194,9 @@
     <Content Include="Scripts\knockout-2.2.0.js" />
     <Content Include="Scripts\knockout.mapping-latest.debug.js" />
     <Content Include="Scripts\knockout.mapping-latest.js" />
+    <None Include="Scripts\linq-vsdoc.js" />
+    <Content Include="Scripts\linq.js" />
+    <Content Include="Scripts\linq.min.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -224,7 +230,7 @@
     <Content Include="Areas\Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Areas\Raven\Views\Replication\Index.cshtml" />
+    <Content Include="Areas\Raven\Views\RavenAdmin\Replication.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

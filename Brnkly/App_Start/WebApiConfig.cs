@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Web.Http;
 using System.Web.Http.Dependencies;
 using Newtonsoft.Json.Serialization;
@@ -18,11 +17,10 @@ namespace Brnkly
                 new CamelCasePropertyNamesContractResolver();
             config.Formatters.Add(jsonFormatter);
 
+            // api/raven/replication/pending
             config.Routes.MapHttpRoute(
-                name: "DefaultApi",
-                routeTemplate: "api/{controller}/{id}",
-                defaults: new { id = RouteParameter.Optional }
-            );
+                name: "Api-Raven-Default",
+                routeTemplate: "api/raven/{controller}/{action}");
         }
     }
 

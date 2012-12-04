@@ -88,17 +88,24 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DatabaseNameExtensions.cs" />
+    <Compile Include="IndexingExtensions.cs" />
+    <Compile Include="StatsExtensions.cs" />
+    <Compile Include="IndexingStatistics.cs" />
+    <Compile Include="InstanceIndexStats.cs" />
+    <Compile Include="RavenHelper.cs" />
+    <Compile Include="RavenUriExtensions.cs" />
     <Compile Include="DocumentStoreWrapper.cs" />
     <Compile Include="DocumentStoreFactory.cs" />
-    <Compile Include="DocumentStoreSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RavenConfig.cs" />
-    <Compile Include="Destination.cs" />
-    <Compile Include="StoreInstance.cs" />
+    <Compile Include="ReplicationExtensions.cs" />
+    <Compile Include="Instance.cs" />
     <Compile Include="Store.cs" />
     <Compile Include="ReadOnlyListener.cs" />
     <Compile Include="AccessMode.cs" />
+    <Compile Include="StoreStats.cs" />
+    <Compile Include="Temp.cs" />
+    <Compile Include="Tracer.cs" />
     <Compile Include="Web\RavenApiController.cs" />
     <Compile Include="Web\RavenMvcController.cs" />
   </ItemGroup>

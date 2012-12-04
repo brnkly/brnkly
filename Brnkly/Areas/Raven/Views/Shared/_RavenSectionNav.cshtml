@@ -8,12 +8,37 @@
             </a>            
             <span class="brand">Raven</span>
             <div id="raven-nav-collapse" class="nav-collapse collapse">
-                <ul class="nav">
-                    <li class="active"><a href="/admin/raven/replication">Replication</a></li>
-                    <li><a href="#">Indexes</a></li>
-                    <li><a href="#">Requests</a></li>
+                <ul class="nav" role="navigation">
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" role="button" data-toggle="dropdown" href="#">
+                            Store: 
+                            <b><span data-bind="text: brnkly.raven.activeStore().name"></span></b>
+                            <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu" role="menu">
+                            <!--ko foreach: brnkly.raven.stores()-->
+                            <li>
+                                <a href="#" data-bind="click: brnkly.raven.setActiveStore">
+                                    <i class="icon-pencil"></i>
+                                    <span data-bind="text: name"></span>
+                                </a>
+                            </li>
+                            <!--/ko-->
+                            <li class="divider"></li>
+                            <li>
+                                <a href="#add-store-modal" data-toggle="modal">
+                                    <i class="icon-plus"></i>
+                                    Add store...
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
         </div>
     </div>
+</div>
+<div id="message-container">
+    <div id="message" class="alert"></div>
+    <div id="working" class="alert alert-info"><img src="~/content/images/ajax-loader.gif"> Working...</div>
 </div>

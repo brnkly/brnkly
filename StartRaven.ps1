@@ -1,14 +1,14 @@
-param($serverName)
+param($serverNames = 'localhost', $port = 8081)
 
-$serverExe = ".\packages\RavenDB.Server.2.0.2161\Raven.Server.exe";
+$serverExe = ".\packages\RavenDB.Server.2.0.2161-Unstable\tools\Raven.Server.exe";
+#$serverExe = "C:\dev\ravendb\Raven.Server\bin\Debug\Raven.Server.exe";
 
-@($serverName) | %{
+@($serverNames) | %{
 	$serverSettings = "--set=Raven/HostName==$_ " + `
 					  "--set=Raven/DataDir==c:\RavenData\$_\Data " + `
-		              "--set=Raven/Port==8081 " + `
-					  "--set=Raven/VirtualDirectory==/RavenDB " + `
-					  "--set=Raven/AnonymousAccess==All";
+		              "--set=Raven/Port==$port " + `
+					  "--set=Raven/AnonymousAccess==None";
 
 	Write-Host "`"$serverExe $serverSettings`"";
-	Start-Process cmd -ArgumentList /C, "`"$serverExe $serverSettings`"";
+	Start-Process cmd -ArgumentList /C , "`"$serverExe /K $serverSettings`"";
 }
