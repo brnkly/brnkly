@@ -1,6 +1,6 @@
 param($serverName)
 
-$serverExe = "C:\dev\brnkly-private\packages\RavenDB.Server.1.0.960\Raven.Server.exe";
+$serverExe = ".\packages\RavenDB.Server.2.0.2161\Raven.Server.exe";
 
 @($serverName) | %{
 	$serverSettings = "--set=Raven/HostName==$_ " + `
