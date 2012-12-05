@@ -131,7 +131,7 @@
             <table>
                 <tbody>
                     <!--ko foreach: { data: stats().indexing(), as: 'index' }-->
-                    <tr>
+                    <tr class="raven-store-instance">
                         <td>
                             <span data-bind="text: name"></span>
                         </td>
@@ -170,6 +170,7 @@
                                     </li>
                                 </ul>
                             </div>
+                            <div><span class="raven-index-hash" data-bind="text: hashCode()"></span></div>
                             <div><span class="label" 
                                 data-bind="text: status(),
                                             css: { 'label-important': status() == 'Missing',

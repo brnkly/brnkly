@@ -8,6 +8,7 @@ namespace Brnkly.Raven
         public Uri Url { get; set; }
         public bool Exists { get; set; }
         public bool IsStale { get; set; }
+        public int HashCode { get; set; }
 
         public void CopyFrom(IndexStats indexStats)
         {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Raven.Abstractions.Data;
+using Raven.Abstractions.Indexing;
 using Raven.Abstractions.Replication;
 using Raven.Client.Connection.Async;
 using Raven.Json.Linq;
@@ -17,14 +18,21 @@ namespace Brnkly.Raven
             public Uri Url { get; set; }
             public DatabaseStatistics DatabaseStats { get; set; }
             public ReplicationStatisticsTemp ReplicationStats { get; set; }
+            public Dictionary<string, int> IndexHashCodes { get; set; }
+
+            public InstanceStatsHolder()
+            {
+                this.IndexHashCodes = new Dictionary<string, int>();
+            }
         }
 
         public static async Task<StoreStats> GetStats(this RavenHelper raven, Store store)
         {
             var dbStats = new Dictionary<Uri, Task<DatabaseStatistics>>();
             var replicationStats = new Dictionary<Uri, Task<RavenJToken>>();
-            raven.RequestData(store, dbStats, replicationStats);
-            var responses = await GatherResponses(store, dbStats, replicationStats);
+            var indexes = new Dictionary<Uri, Task<IndexDefinition[]>>();
+            raven.RequestData(store, dbStats, replicationStats, indexes);
+            var responses = await GatherResponses(store, dbStats, replicationStats, indexes);
             var storeStats = CreateStats(store, responses);
             return storeStats;
         }
@@ -33,7 +41,8 @@ namespace Brnkly.Raven
             this RavenHelper raven,
             Store store,
             Dictionary<Uri, Task<DatabaseStatistics>> dbStats,
-            Dictionary<Uri, Task<RavenJToken>> replicationStats)
+            Dictionary<Uri, Task<RavenJToken>> replicationStats,
+            Dictionary<Uri, Task<IndexDefinition[]>> indexes)
         {
             foreach (var instance in store.Instances)
             {
@@ -45,6 +54,11 @@ namespace Brnkly.Raven
                         instance.Url,
                         session.Advanced.DocumentStore.AsyncDatabaseCommands.ForDatabase(store.Name)
                             .GetStatisticsAsync());
+
+                    indexes.Add(
+                        instance.Url,
+                        session.Advanced.DocumentStore.AsyncDatabaseCommands.ForDatabase(store.Name)
+                            .GetIndexesAsync(0, 255));
 
                     var asyncServerClient = session.Advanced.DocumentStore.AsyncDatabaseCommands
                         .ForDatabase(store.Name) as AsyncServerClient;
@@ -60,7 +74,8 @@ namespace Brnkly.Raven
         private static async Task<List<InstanceStatsHolder>> GatherResponses(
             Store store,
             Dictionary<Uri, Task<DatabaseStatistics>> dbStats,
-            Dictionary<Uri, Task<RavenJToken>> replicationStats)
+            Dictionary<Uri, Task<RavenJToken>> replicationStats,
+            Dictionary<Uri, Task<IndexDefinition[]>> indexes)
         {
             var responses = new List<InstanceStatsHolder>();
 
@@ -70,6 +85,11 @@ namespace Brnkly.Raven
                 try
                 {
                     response.DatabaseStats = await dbStats[instance.Url];
+
+                    var indexData = await indexes[instance.Url];
+                    response.IndexHashCodes = indexData.ToDictionary(
+                        i => i.Name,
+                        i => i.GetHashCode());
 
                     var data = await replicationStats[instance.Url];
                     response.ReplicationStats = new RavenImports.JsonSerializer()
@@ -154,6 +174,15 @@ namespace Brnkly.Raven
                     else
                     {
                         instanceIdxStatus.IsStale = true;
+                    }
+
+                    if (response.IndexHashCodes != null)
+                    {
+                        int hashCode;
+                        if (response.IndexHashCodes.TryGetValue(indexStats.Name, out hashCode))
+                        {
+                            instanceIdxStatus.HashCode = hashCode;
+                        }
                     }
 
                     instanceIdxStatus.CopyFrom(indexStats);

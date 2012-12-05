@@ -28,6 +28,7 @@ namespace Brnkly.Raven
             };
             store.Initialize();
 
+            store.Conventions.FailoverBehavior = FailoverBehavior.FailImmediately;
             store.JsonRequestFactory.ConfigureRequest +=
                 new EventHandler<WebRequestEventArgs>(JsonRequestFactory_ConfigureRequest);
 
