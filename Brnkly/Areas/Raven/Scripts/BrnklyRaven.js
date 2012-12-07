@@ -248,7 +248,7 @@
                         url: instanceUrl,
                         disabled: true,
                         transitiveReplicationBehavior: 'None'
-                    }, self.name(), inst.url));
+                    }, self.name(), inst.url()));
                 inst.destinations.orderBy(
                     function (item) { return item.displayName().toLowerCase() });
             }
@@ -270,10 +270,10 @@
                 var inst = self.instances()[i];
                 instanceObj.destinations.push(
                     new DestinationVM({
-                        url: inst.url,
+                        url: inst.url(),
                         disabled: true,
                         transitiveReplicationBehavior: 'None'
-                    }, self.name(), inst.url));
+                    }, self.name(), inst.url()));
             }
 
             self.getStats();
@@ -460,7 +460,6 @@
         };
 
         self.reset = function (instanceUrl) {
-            console.log(instanceUrl);
             $.ajax({
                 url: '/api/raven/indexing/reset',
                 type: 'POST',
@@ -480,7 +479,6 @@
         };
 
         self.delete = function (instanceUrl) {
-            console.log(instanceUrl);
             $.ajax({
                 url: '/api/raven/indexing/delete',
                 type: 'DELETE',
