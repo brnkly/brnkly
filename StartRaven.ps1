@@ -1,7 +1,7 @@
 param($serverNames = 'localhost', $port = 8081)
 
-$serverExe = ".\packages\RavenDB.Server.2.0.2161-Unstable\tools\Raven.Server.exe";
-$serverExe = "C:\dev\ravendb\Raven.Server\bin\Debug\Raven.Server.exe";
+$serverExe = ".\packages\RavenDB.Server.2.0.2170-Unstable\tools\Raven.Server.exe";
+#$serverExe = "C:\dev\ravendb\Raven.Server\bin\Debug\Raven.Server.exe";
 
 @($serverNames) | %{
 	$serverSettings = "--set=Raven/HostName==$_ " + `
