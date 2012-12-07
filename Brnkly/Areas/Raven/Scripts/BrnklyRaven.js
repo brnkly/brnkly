@@ -70,14 +70,14 @@
 
     function RavenConfigVM(data) {
         var self = this;
-        var mapping = {
+        self.koMapping = {
+            'ignore': 'id',
             'stores': {
-                create: function (options) {
-                    return new StoreVM(options.data);
-                }
+                create: function (options) { return new StoreVM(options.data); },
+                key: function (data) { return ko.utils.unwrapObservable(data.name); }
             }
         };
-        ko.mapping.fromJS(data, mapping, this);
+        ko.mapping.fromJS(data, self.koMapping, this);
 
         self.etag = ko.observable(data.etag);
         self.hasEtag = ko.computed(function () {
@@ -90,7 +90,7 @@
 
         self.getStore = function (name) {
             return Enumerable.From(self.stores())
-                .Where(function (s) { return s.name == name; })
+                .Where(function (s) { return s.name() == name; })
                 .FirstOrDefault(null);
         };
 
@@ -98,7 +98,7 @@
             var storeName = $('#store-name').val();
             var store = new StoreVM({ name: storeName, instances: [] });
             self.stores.push(store);
-            self.stores.orderBy(function (item) { return item.name.toLowerCase(); });
+            self.stores.orderBy(function (item) { return item.name().toLowerCase(); });
             self.activeStore(store);
             setInterval(store.getStats, 15000);
             store.getStats();
@@ -164,8 +164,8 @@
                 beforeSend: function (jqXHR, settings) { $('#working').show(); },
                 complete: function(jqXHR, textStatus) { $('#working').hide(); },
                 success: function (data) {
-                    setTimeout(self.activeStore().getStats, 1000);
-                    message('success', 'Publish succeeded');
+                    message('success', 'Publish succeeded. Reloading...');
+                    window.location.reload();
                 },
                 error: function (data) {
                     var result = JSON.parse(data.responseText);
@@ -179,9 +179,8 @@
         var self = this;
 
         var mapping = {
-            'copy': ['name'],
             'instances': {
-                create: function (options) { return new InstanceVM(options.data, self.name); },
+                create: function (options) { return new InstanceVM(options.data, ko.utils.unwrapObservable(self.name)); },
                 key: function (data) { return data.url; }
             }
         };
@@ -239,7 +238,7 @@
                 '';
             var instanceUrl = self.newInstance.protocol() + '://' +
                 self.newInstance.host() + ':' + self.newInstance.port() +
-                vdir + '/databases/' + self.name.toLowerCase();
+                vdir + '/databases/' + self.name().toLowerCase();
 
             // Add the new instance as destination for all existing instances.
             for (var i = 0; i < self.instances().length; i++) {
@@ -249,7 +248,7 @@
                         url: instanceUrl,
                         disabled: true,
                         transitiveReplicationBehavior: 'None'
-                    }, self.name, inst.url));
+                    }, self.name(), inst.url));
                 inst.destinations.orderBy(
                     function (item) { return item.displayName().toLowerCase() });
             }
@@ -274,7 +273,7 @@
                         url: inst.url,
                         disabled: true,
                         transitiveReplicationBehavior: 'None'
-                    }, self.name, inst.url));
+                    }, self.name(), inst.url));
             }
 
             self.getStats();
@@ -299,15 +298,14 @@
         var self = this;
         self.storeName = storeName;
         var mapping = {
-            'copy': ['url'],
             'destinations': {
                 create: function (options) { return new DestinationVM(options.data, storeName, data.url); },
-                key: function (data) { return data.url; }
+                key: function (data) { return ko.utils.unwrapObservable(data.url); }
             }
         };
         ko.mapping.fromJS(data, mapping, self);
 
-        self.displayName = getDisplayName(self.url);
+        self.displayName = getDisplayName(self.url());
     };
 
     function DestinationVM(data, storeName, instanceUrl) {
@@ -315,21 +313,47 @@
         self.storeName = storeName;
         self.instanceUrl = instanceUrl;
 
-        var mapping = { 'copy': ['url'] };
-        ko.mapping.fromJS(data, mapping, self);
+        ko.mapping.fromJS(data, {}, self);
 
-        self.displayName = getDisplayName(self.url);
-
+        self.displayName = getDisplayName(self.url());
+        if (self.currentlyReplicating === undefined) {
+            self.currentlyReplicating = !self.disabled();
+        }
         self.replicate = ko.computed({
             read: function () { return !self.disabled(); },
             write: function (value) { self.disabled(!value); },
             owner: self
         });
+        self.replicationState = ko.computed(function () {
+            var msg = "Replication: " + (self.currentlyReplicating ? 'ON' : 'OFF');
+            if (self.currentlyReplicating == self.disabled()) {
+                if (self.currentlyReplicating) {
+                    msg += ' - will be OFF after Publish';
+                } else {
+                    msg += ' - will be ON after Publish';
+                }
+            }
+            return msg;
+        });
 
+        if (self.currentlyTransitive === undefined) {
+            self.currentlyTransitive = (self.transitiveReplicationBehavior() == 'Replicate');
+        }
         self.isTransitive = ko.computed({
             read: function () { return self.transitiveReplicationBehavior() == 'Replicate'; },
             write: function (value) { self.transitiveReplicationBehavior(value ? 'Replicate' : 'None'); },
             owner: self
+        });
+        self.transitiveState = ko.computed(function () {
+            var msg = "Transitive: " + (self.currentlyTransitive ? 'ON' : 'OFF');
+            if (self.currentlyTransitive != self.isTransitive()) {
+                if (self.currentlyTransitive) {
+                    msg += ' - will be OFF after Publish';
+                } else {
+                    msg += ' - will be ON after Publish';
+                }
+            }
+            return msg;
         });
 
         self.getStats = ko.computed(function() {
@@ -342,7 +366,7 @@
             if (!instStats) { return null; }
 
             var myStats = Enumerable.From(instStats.stats())
-                .Where(function (dest) { return dest.url().toLowerCase() == self.url.toLowerCase(); })
+                .Where(function (dest) { return dest.url().toLowerCase() == self.url().toLowerCase(); })
                 .FirstOrDefault();
 
             return { sourceLatestEtag: instStats.mostRecentDocumentEtag(), replication: myStats };
@@ -351,7 +375,7 @@
         self.status = ko.computed(function () {
             var myStats = self.getStats();
             if (!myStats || !myStats.replication) { 
-                return 'n/a';
+                return '';
             } else if (myStats.replication.failureCount() > 0) {
                 return 'Error';
             } else if (myStats.sourceLatestEtag == myStats.replication.lastEtagCheckedForReplication()) {
@@ -364,16 +388,18 @@
 
         self.statusClass = ko.computed(function () {
             var sts = self.status();
-            if (sts == 'n/a') {
-                return 'label';
-            } else if (self.disabled()) {
-                return 'label';
+            if (self.currentlyReplicating == self.disabled()) {
+                return self.currentlyReplicating ? 'inverse' : 'info';
+            } else if (self.currentlyTransitive != self.isTransitive()) {
+                return 'info';
+            } else if (sts == '' || self.disabled()) {
+                return '';
             } else if (sts == 'Current') {
-                return 'label label-success';
+                return 'success';
             } else if (sts[sts.length - 1] == 's' && parseInt(sts) < 10) {
-                return 'label label-warning';
+                return 'warning';
             } else {
-                return 'label label-important';
+                return 'danger';
             }
         });
     };
@@ -393,7 +419,6 @@
     function IndexStatsVM(data) {
         var self = this;
         var mapping = {
-            'copy': ['name'],
             'instances': {
                 create: function (options) {
                     return new InstanceIndexStatsVM(options.data);
@@ -421,7 +446,7 @@
                 data: ko.toJSON({
                     fromInstanceUrl: self.fromInstanceUrl(),
                     toInstanceUrl: toInstanceUrl,
-                    indexName: self.name
+                    indexName: self.name()
                 }),
                 contentType: "application/json;charset=utf-8",
                 success: function (data) {
@@ -441,7 +466,7 @@
                 type: 'POST',
                 data: ko.toJSON({
                     instanceUrl: instanceUrl,
-                    indexName: self.name
+                    indexName: self.name()
                 }),
                 contentType: "application/json;charset=utf-8",
                 success: function (data) {
@@ -461,7 +486,7 @@
                 type: 'DELETE',
                 data: ko.toJSON({
                     instanceUrl: instanceUrl,
-                    indexName: self.name
+                    indexName: self.name()
                 }),
                 contentType: "application/json;charset=utf-8",
                 success: function (data) {
@@ -491,24 +516,49 @@
                 return getLagValue(new Date(self.lastIndexedTimestamp()), 2);
             }
         });
+
+        self.statusClass = ko.computed(function () {
+            var sts = self.status();
+            if (sts == 'Missing') {
+                return 'danger';
+            } else if (sts == 'Current') {
+                return 'success';
+            } else if (sts[sts.length - 1] == 's' && parseInt(sts) < 10) {
+                return 'warning';
+            } else {
+                return 'danger';
+            }
+        });
     };
 
-    $('#working').hide();
-
-    $.get("/api/raven/replication/pending", function (data) {
+    function loadRavenConfig() {
+        $('#working').show();
         brnkly.loading = ko.observable(true);
-        brnkly.raven = new RavenConfigVM(data);
-        brnkly.loading(false);
 
-        if (brnkly.raven.stores().length > 0) {
-            brnkly.raven.activeStore(brnkly.raven.stores()[0]);
-            Enumerable.From(brnkly.raven.stores()).ForEach(function (store) {
-                store.getStats();
-                setInterval(store.getStats, 15000);
+        $.get("/api/raven/replication/live", function (data) {
+            if (!data) { data = {}; }
+            if (!data.stores) { data.stores = []; }
+
+            brnkly.raven = new RavenConfigVM(data);
+
+            $.get("/api/raven/replication/pending", function (data) {
+                ko.mapping.fromJS(data, {}, brnkly.raven);
+                if (brnkly.raven.stores().length > 0) {
+                    brnkly.raven.activeStore(brnkly.raven.stores()[0]);
+                    Enumerable.From(brnkly.raven.stores()).ForEach(function (store) {
+                        store.getStats();
+                        setInterval(store.getStats, 15000);
+                    });
+                }
+
+                brnkly.raven.dirtyFlag = new ko.dirtyFlag(brnkly.raven.stores);
+                ko.applyBindings(brnkly.raven.stores);
             });
-        }
+        });
 
-        brnkly.raven.dirtyFlag = new ko.dirtyFlag(brnkly.raven.stores);
-        ko.applyBindings(brnkly.raven.stores);
-    });
+        brnkly.loading(false);
+        $('#working').hide();
+    }
+
+    loadRavenConfig();
 });

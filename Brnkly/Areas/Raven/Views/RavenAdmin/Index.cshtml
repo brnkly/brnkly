@@ -45,10 +45,10 @@
 
 <script type="text/html" id="raven-store-template">
 
-    <div class="well well-small" data-bind="attr: { id: name }, visible: name.indexOf('...') == -1">
+    <div class="well well-small" data-bind="attr: { id: name() }">
 
         <div>
-            <h4><span data-bind="text: name + ' - replication'"></span></h4>
+            <h4><span data-bind="text: name() + ' - replication'"></span></h4>
         </div>
 
         <table>
@@ -82,24 +82,33 @@
                     <!--ko foreach: instance.destinations()-->
                     <td class="raven-repl-dest">
                         <div class="btn-group">
-                            <button class="btn btn-mini" 
-                                data-bind="checkbox: replicate, 
-                                           attr: { disabled : instance.url == url,
-                                           title: 'Replication ' + (replicate() ? 'on' : 'off') }">
-                                <i data-bind="css: { 'icon-play': replicate(), 
-                                                     'icon-none': !replicate() }"></i>
+                            <a class="btn btn-mini dropdown-toggle" data-toggle="dropdown" href="#" 
+                                data-bind="attr: { 
+                                    disabled : instance.url() == url(),
+                                    title: replicationState() + '\n' + transitiveState() +
+                                            (status() == 'Current' ? '\nCurrent' : '\nLag: ' + status()),
+                                    class: 'btn btn-mini dropdown-toggle btn-' + statusClass() }">
                                 <span data-bind="text: displayName"></span>
-                            </button>
-                            <button class="btn btn-mini" 
-                                data-bind="checkbox: isTransitive, 
-                                           attr: { disabled : instance.url == url,
-                                                   title: 'Transitive ' + (isTransitive() ? 'on' : 'off') }">
-                                <i data-bind="css: { 'icon-share-alt': isTransitive(), 
-                                                     'icon-none': !isTransitive() }"></i>
-                            </button>
+                                <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a href="#" data-bind="click: function() { replicate(!replicate()); }">
+                                        <i data-bind="css: { 'icon-ok': replicate(), 'icon-': !replicate() }"></i>
+                                        Replicate from <span data-bind="text: instance.displayName"></span> 
+                                        to <span data-bind="text: displayName"></span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#"  data-bind="click: function() { isTransitive(!isTransitive()); }">
+                                        <i data-bind="css: { 'icon-ok': isTransitive(), 'icon-': !isTransitive() }"></i>
+                                        Use transitive replication
+                                    </a>
+                                </li>
+                            </ul>
                         </div>
                         <div>
-                            <span data-bind="text: status(), attr: { class: statusClass() }"></span>
+                            <span class="raven-repl-dest-lag" data-bind="text: isTransitive() ? 'Transitive' : '&nbsp;'"></span>
                         </div>
                     </td>
                     <!--/ko-->
@@ -123,9 +132,9 @@
         </table>
     </div>
 
-    <div class="well well-small" data-bind="attr: { id: name }, visible: name.indexOf('...') == -1">
+    <div class="well well-small" data-bind="attr: { id: name() }">
         <div>
-            <h4><span data-bind="text: name + ' - indexing'"></span></h4>
+            <h4><span data-bind="text: name() + ' - indexing'"></span></h4>
         </div>
         <div data-bind="if: $data.stats">
             <table>
@@ -133,12 +142,16 @@
                     <!--ko foreach: { data: stats().indexing(), as: 'index' }-->
                     <tr class="raven-store-instance">
                         <td>
-                            <span data-bind="text: name"></span>
+                            <span data-bind="text: name()"></span>
                         </td>
                         <!--ko foreach: instances()-->
                         <td class="raven-repl-dest">
                             <div class="btn-group dropup">
-                                <a class="btn btn-mini dropdown-toggle" data-toggle="dropdown" href="#">
+                                <a class="btn btn-mini dropdown-toggle" data-toggle="dropdown" href="#"
+                                    data-bind="attr: {
+                                        class: 'btn btn-mini dropdown-toggle btn-' + statusClass(),
+                                        title: 'Hash code: ' + hashCode() +
+                                               (status() == 'Current' ? '\nCurrent' : (status() == 'Missing' ? '\nIndex MISSING' : '\nLag: ' + status())) }">
                                     <span data-bind="text: displayName"></span>
                                     <span class="caret"></span>
                                 </a>
@@ -151,7 +164,7 @@
                                     <!--ko if: index.fromInstanceUrl() -->
                                     <li>
                                         <a href="#" class="disabled" data-bind="
-                                            click: function() { index.paste(url(), index.name); }">
+                                            click: function() { index.paste(url(), index.name()); }">
                                             <i class="icon-pencil"></i>
                                             Paste from <span data-bind="text: index.fromInstanceDisplayName()"></span>
                                         </a>
@@ -171,11 +184,6 @@
                                 </ul>
                             </div>
                             <div><span class="raven-index-hash" data-bind="text: hashCode()"></span></div>
-                            <div><span class="label" 
-                                data-bind="text: status(),
-                                            css: { 'label-important': status() == 'Missing',
-                                                    'label-success': status() == 'Current',
-                                                    'label-warning': status() != 'Missing' && status() != 'Current' }"></span></div>
                         </td>
                         <!--/ko-->
                     </tr>

@@ -24,6 +24,7 @@ body {
   display: none;
   text-align: center;
 }
+.raven-repl-dest-lag,
 .raven-index-hash {
   font-size: x-small;
 }

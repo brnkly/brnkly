@@ -22,7 +22,8 @@ namespace Brnkly.Raven.Admin.Controllers
         public RavenConfigModel Pending()
         {
             var config = this.LoadConfig();
-            var configModel = GetModel(config.Pending);
+            var configModel = Mapper.Map<RavenConfigModel>(config.Pending);
+            configModel.Etag = GetEtag(config.Pending);
             return configModel;
         }
 
@@ -39,6 +40,25 @@ namespace Brnkly.Raven.Admin.Controllers
 
             var newEtag = this.RavenSession.Advanced.GetEtagFor(config.Pending).Value;
             return this.GetCreatedResponse(newEtag);
+        }
+
+        [HttpGet]
+        public RavenConfigModel Live()
+        {
+            var config = this.LoadConfig();
+            var configModel = Mapper.Map<RavenConfigModel>(config.Live);
+            configModel.Etag = GetEtag(config.Pending);
+            return configModel;
+        }
+
+        private Guid GetEtag(RavenConfig pending)
+        {
+            if (pending != null && !string.IsNullOrWhiteSpace(pending.Id))
+            {
+                return this.RavenSession.Advanced.GetEtagFor(pending).Value;
+            }
+
+            return Guid.Empty;
         }
 
         [HttpPut]

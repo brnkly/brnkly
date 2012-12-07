@@ -31,17 +31,6 @@ namespace Brnkly.Raven.Admin.Controllers
             return configs;
         }
 
-        protected RavenConfigModel GetModel(RavenConfig config)
-        {
-            var configModel = Mapper.Map<RavenConfigModel>(config);
-            if (configModel.Id != null)
-            {
-                configModel.Etag = this.RavenSession.Advanced.GetEtagFor(config).Value;
-            }
-
-            return configModel;
-        }
-
         protected void ThrowIfEtagDoesNotMatch(RavenConfig config, Guid originalEtag)
         {
             var currentEtag = (config.Id == null) ?
