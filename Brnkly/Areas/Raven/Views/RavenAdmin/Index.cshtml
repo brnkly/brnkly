@@ -41,7 +41,15 @@
 @Html.Partial("_AddStoreModal")
 @Html.Partial("_AddInstanceModal")
 
-<div data-bind="template: { name: 'raven-store-template', data: brnkly.raven.activeStore() }"></div>
+<div data-bind="template: { name: 'raven-store-template', data: brnkly.raven.activeStore() },
+                visible: brnkly.raven.stores().length > 0"></div>
+
+<div data-bind="visible: brnkly.raven.stores().length == 0">
+    <a href="#add-store-modal" data-toggle="modal">
+        <i class="icon-plus"></i>
+        Add store...
+    </a>
+</div>
 
 <script type="text/html" id="raven-store-template">
 
