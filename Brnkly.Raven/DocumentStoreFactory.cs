@@ -14,18 +14,22 @@ namespace Brnkly.Raven
     {
         private static ILog logger = LogManager.GetCurrentClassLogger();
 
-        private bool isInitialized;
         private ConcurrentBag<DocumentStoreWrapper> allStoreWrappers =
             new ConcurrentBag<DocumentStoreWrapper>();
         private RavenConfig ravenConfig = new RavenConfig();
+        private Uri operationsStoreUrl;
+        private bool isInitialized;
 
-        public Uri OperationsStoreUrl { get; private set; }
-
-        public DocumentStoreFactory(Uri operationsStoreUrl)
+        public DocumentStoreFactory(string connectionStringName = "Brnkly.Raven.DocumentStoreFactory")
         {
-            var trimmedUrl = operationsStoreUrl.TrimTrailingSlash();
-            EnsureUriPathIncludesDatabase(trimmedUrl);
-            this.OperationsStoreUrl = trimmedUrl;
+            var parser = ConnectionStringParser<RavenConnectionStringOptions>
+                .FromConnectionStringName(connectionStringName);
+            parser.Parse();
+            var connection = parser.ConnectionStringOptions;
+
+            var url = new Uri(connection.Url);
+            EnsureUriPathIncludesDatabase(url);
+            this.operationsStoreUrl = url;
         }
 
         public DocumentStoreFactory Initialize()
@@ -43,11 +47,11 @@ namespace Brnkly.Raven
                         .Subscribe(OnConfigChanged);
                 };
             var readOnlyOpsStore = this
-                .GetOrCreate(this.OperationsStoreUrl.GetDatabaseName(), AccessMode.ReadOnly, initializer)
+                .GetOrCreate(this.operationsStoreUrl.GetDatabaseName(), AccessMode.ReadOnly, initializer)
                 .Initialize();
 
             readOnlyOpsStore.DatabaseCommands.EnsureDatabaseExists(
-                this.OperationsStoreUrl.GetDatabaseName());
+                this.operationsStoreUrl.GetDatabaseName());
 
             LoadRavenConfig(readOnlyOpsStore);
             this.isInitialized = true;
@@ -202,7 +206,7 @@ namespace Brnkly.Raven
             instance = instance ?? 
                 new Instance
                 {
-                    Url = new Uri(this.OperationsStoreUrl, wrapper.Name.ToLowerInvariant()),
+                    Url = new Uri(this.operationsStoreUrl, wrapper.Name.ToLowerInvariant()),
                     AllowReads = true,
                     AllowWrites = wrapper.AccessMode == AccessMode.ReadWrite
                 };

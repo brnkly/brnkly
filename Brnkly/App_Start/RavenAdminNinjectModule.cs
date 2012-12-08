@@ -2,6 +2,7 @@
 using Brnkly.Raven.Admin.Controllers;
 using Ninject.Modules;
 using Raven.Client;
+using Raven.Abstractions.Data;
 
 namespace Brnkly.Raven.Admin
 {
@@ -9,31 +10,27 @@ namespace Brnkly.Raven.Admin
     {
         public override void Load()
         {
-            var factory = new DocumentStoreFactory(
-                new Uri("http://rav1:8081/databases/operations"))
-				.Initialize();
+            var factory = new DocumentStoreFactory().Initialize();
             Bind<DocumentStoreFactory>().ToConstant(factory);
 
             var readWriteOpsStore = factory
                 .GetOrCreate("Operations", AccessMode.ReadWrite)
                 .Initialize();
 
-            BindWithRavenSession<ReplicationController>(readWriteOpsStore);
-            BindWithRavenSession<IndexingController>(readWriteOpsStore);
+            BindToSelfWithRavenSession<ReplicationController>(readWriteOpsStore);
+            BindToSelfWithRavenSession<IndexingController>(readWriteOpsStore);
         }
 
-        private void BindWithRavenSession<T>(IDocumentStore store)
+        private void BindToSelfWithRavenSession<T>(IDocumentStore docStore)
         {
             Bind<T>().ToSelf().WithPropertyValue(
                 "RavenSession",
-                (context, target) => OpenSession(store));
-        }
-
-        private static IDocumentSession OpenSession(IDocumentStore docStore)
-        {
-            var session = docStore.OpenSession();
-            session.Advanced.UseOptimisticConcurrency = true;
-            return session;
+                (context, target) =>
+                {
+                    var session = docStore.OpenSession();
+                    session.Advanced.UseOptimisticConcurrency = true;
+                    return session;
+                });
         }
     }
 }
