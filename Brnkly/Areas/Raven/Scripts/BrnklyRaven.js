@@ -288,7 +288,7 @@
                 self.instances.splice(index, 1);
                 for (var j = 0; j < self.instances().length; j++) {
                     self.instances()[j].destinations.removeWhere(function (dest) {
-                        return dest.url == instance.url
+                        return dest.url() == instance.url()
                     });
                 }
                 self.getStats();
