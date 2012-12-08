@@ -14,7 +14,10 @@ namespace Brnkly.Raven.Admin
 				.Initialize();
             Bind<DocumentStoreFactory>().ToConstant(factory);
 
-            var readWriteOpsStore = factory.GetOrCreate("Operations", AccessMode.ReadWrite);
+            var readWriteOpsStore = factory
+                .GetOrCreate("Operations", AccessMode.ReadWrite)
+                .Initialize();
+
             BindWithRavenSession<ReplicationController>(readWriteOpsStore);
             BindWithRavenSession<IndexingController>(readWriteOpsStore);
         }

@@ -1,13 +1,22 @@
 ﻿using System;
+using Raven.Abstractions.Logging;
 using Raven.Client.Connection;
 
 namespace Brnkly.Raven
 {
     public static class IndexingExtensions
     {
+        private static ILog logger = LogManager.GetCurrentClassLogger();
+
         public static void DeleteIndex(this RavenHelper raven, Uri instanceUrl, string indexName)
         {
-            raven.GetDatabaseCommands(instanceUrl).DeleteIndex(indexName);
+            try
+            {
+                raven.GetDatabaseCommands(instanceUrl).DeleteIndex(indexName);
+            }
+            catch (Exception exception)
+            {
+            }
         }
 
         public static void ResetIndex(this RavenHelper raven, Uri instanceUrl, string indexName)

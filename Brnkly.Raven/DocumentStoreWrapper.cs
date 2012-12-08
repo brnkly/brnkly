@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.Reflection;
+using Raven.Abstractions.Logging;
 using Raven.Client;
 using Raven.Client.Changes;
 using Raven.Client.Connection;
@@ -53,67 +54,24 @@ namespace Brnkly.Raven
     /// </example>
     public sealed class DocumentStoreWrapper : IDocumentStore
     {
-        private Assembly assemblyToScanForIndexingTasks;
-
         public string Name { get; private set; }
         public AccessMode AccessMode { get; private set; }
         public bool IsInitialized { get; internal set; }
+        internal Action<DocumentStoreWrapper> UpdateInnerStore { get; set; }
         internal DocumentStore InnerStore { get; set; }
 
         internal DocumentStoreWrapper(
             string name, 
-            AccessMode accessMode = AccessMode.ReadOnly)
+            AccessMode accessMode,
+            Action<DocumentStoreWrapper> updateInnerStore)
         {
             name.Ensure("name").IsNotNullOrWhiteSpace();
+            updateInnerStore.Ensure("updateInnerStore").IsNotNull();
 
-            this.IsInitialized = false;
             this.Name = name;
             this.AccessMode = accessMode;
-        }
-
-        public DocumentStoreWrapper CreateIndexes(Assembly assemblyToScanForIndexingTasks)
-        {
-
-            // TODO: Need to allow multiple of these to be added.
-            assemblyToScanForIndexingTasks.Ensure("assemblyToScanForIndexingTasks").IsNotNull();
-
-            this.assemblyToScanForIndexingTasks = assemblyToScanForIndexingTasks;
-
-            try
-            {
-                IndexCreation.CreateIndexes(assemblyToScanForIndexingTasks, this.InnerStore);
-            }
-            catch (Exception exception)
-            {
-                //Log.Error(
-                //    exception,
-                //    string.Format(
-                //        "Failed to create indexes for assembly {0}.",
-                //        assemblyToScanForIndexingTasks.FullName),
-                //    LogPriority.Application);
-            }
-
-            return this;
-        }
-
-        private void ThrowIfNotInitialized()
-        {
-            if (!this.IsInitialized)
-            {
-                var message = string.Format("The '{0}' store has not been initialized. ", this.Name);
-                if (string.Equals(this.Name, "Operations"))
-                {
-                    message += "Check the connection string in the web.config file.";
-                }
-                else
-                {
-                    message += "Check the Operations connection string in the web.config file, ";
-                    //message += "and the RavenDB servers listed in the document '" + EnvironmentConfig.StorageId + "' ";
-                    message += "in the Operations store.";
-                }
-
-                throw new InvalidOperationException(message);
-            }
+            this.IsInitialized = false;
+            this.UpdateInnerStore = updateInnerStore;
         }
 
         public IDisposable AggressivelyCacheFor(TimeSpan cacheDuration)
@@ -138,7 +96,6 @@ namespace Brnkly.Raven
                 throw new NotImplementedException("DocumentStoreWrapper does not support specifying a database name in this method. The database name must be specified in the constructor.");
             }
 
-            // TODO: Need to track these, so we can re-add to a new inner store.
             this.ThrowIfNotInitialized();
             return this.InnerStore.Changes();
         }
@@ -169,7 +126,6 @@ namespace Brnkly.Raven
 
         public void ExecuteIndex(AbstractIndexCreationTask indexCreationTask)
         {
-            // TODO: Need to track these, so we can re-execute on a new inner store.
             this.ThrowIfNotInitialized();
             this.InnerStore.ExecuteIndex(indexCreationTask);
         }
@@ -182,23 +138,20 @@ namespace Brnkly.Raven
 
         public string Identifier
         {
-            get
-            {
-                return this.InnerStore.Identifier;
-            }
-            set
-            {
-                throw new InvalidOperationException(
-                    "Setting the identifier is not supported. " +
-                    "Instead, use the storeName parameter when constructing the object.");
-            }
+            get { return this.InnerStore.Identifier; }
+            set { throw new NotSupportedException( "DocumentStoreWrapper does not support setting Identifier."); }
         }
 
         public IDocumentStore Initialize()
         {
-            return this.InnerStore.Initialize();
+            if (!this.IsInitialized)
+            {
+                this.UpdateInnerStore(this);
+            }
+
+            return this;
         }
-        
+
         public HttpJsonRequestFactory JsonRequestFactory
         {
             get
@@ -210,7 +163,7 @@ namespace Brnkly.Raven
 
         public IAsyncDocumentSession OpenAsyncSession(string database)
         {
-            throw new NotImplementedException("DocumentStoreWrapper does not support opening a session with a database name. The database name must be specified in the constructor.");
+            throw GetDatabaseNotSupportedException();
         }
 
         public IAsyncDocumentSession OpenAsyncSession()
@@ -223,7 +176,7 @@ namespace Brnkly.Raven
         {
             if (!string.IsNullOrWhiteSpace(sessionOptions.Database))
             {
-                throw new NotImplementedException("DocumentStoreWrapper does not support opening a session with a database name. The database name must be specified in the constructor.");
+                throw GetDatabaseNotSupportedException();
             }
 
             return this.InnerStore.OpenSession(sessionOptions);
@@ -231,7 +184,7 @@ namespace Brnkly.Raven
 
         public IDocumentSession OpenSession(string database)
         {
-            throw new NotImplementedException("DocumentStoreWrapper does not support opening a session with a database name. The database name must be specified in the constructor.");
+            throw GetDatabaseNotSupportedException();
         }
 
         public IDocumentSession OpenSession()
@@ -268,6 +221,32 @@ namespace Brnkly.Raven
         public void Dispose()
         {
             this.InnerStore.Dispose();
+        }
+
+        private void ThrowIfNotInitialized()
+        {
+            // TODO: Fix message.
+            if (!this.IsInitialized)
+            {
+                var message = string.Format("The '{0}' store has not been initialized. ", this.Name);
+                if (string.Equals(this.Name, "Operations"))
+                {
+                    message += "Check the connection string in the web.config file.";
+                }
+                else
+                {
+                    message += "Check the Operations connection string in the web.config file, ";
+                    //message += "and the RavenDB servers listed in the document '" + EnvironmentConfig.StorageId + "' ";
+                    message += "in the Operations store.";
+                }
+
+                throw new InvalidOperationException(message);
+            }
+        }
+
+        private static Exception GetDatabaseNotSupportedException()
+        {
+            throw new NotSupportedException("DocumentStoreWrapper does not support opening a session with a database name.");
         }
     }
 }

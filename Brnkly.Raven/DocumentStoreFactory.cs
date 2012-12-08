@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using Raven.Abstractions.Data;
+using Raven.Abstractions.Logging;
 using Raven.Client;
 using Raven.Client.Document;
 using Raven.Client.Extensions;
@@ -11,9 +12,12 @@ namespace Brnkly.Raven
 {
     public sealed class DocumentStoreFactory
     {
-        private ConcurrentBag<DocumentStoreWrapper> AllStores =
+        private static ILog logger = LogManager.GetCurrentClassLogger();
+
+        private bool isInitialized;
+        private ConcurrentBag<DocumentStoreWrapper> allStoreWrappers =
             new ConcurrentBag<DocumentStoreWrapper>();
-        private RavenConfig RavenConfig = new RavenConfig();
+        private RavenConfig ravenConfig = new RavenConfig();
 
         public Uri OperationsUrl { get; private set; }
 
@@ -26,68 +30,74 @@ namespace Brnkly.Raven
 
         public DocumentStoreFactory Initialize()
         {
-            var readOnlyOpsStore = new DocumentStoreWrapper(
-                this.OperationsUrl.GetDatabaseName(), 
-                AccessMode.ReadOnly);
-            AllStores.Add(readOnlyOpsStore);
-            this.UpdateInnerStore(readOnlyOpsStore);
+            if (this.isInitialized)
+            {
+                return this;
+            }
+
+            var readOnlyOpsStore = this
+                .GetOrCreate(this.OperationsUrl.GetDatabaseName(), AccessMode.ReadOnly)
+                .Initialize();
 
             readOnlyOpsStore.DatabaseCommands.EnsureDatabaseExists(
                 this.OperationsUrl.GetDatabaseName());
 
-            UpdateRavenConfig(readOnlyOpsStore);
-            UpdateAllStores();
+            LoadRavenConfig(readOnlyOpsStore);
+            this.isInitialized = true;
             return this;
         }
 
-        private void UpdateRavenConfig(IDocumentStore opsStore)
+        private void LoadRavenConfig(IDocumentStore opsStore)
         {
             using (var session = opsStore.OpenSession())
             {
                 var config = session.Load<RavenConfig>(RavenConfig.LiveDocumentId);
                 if (config != null)
                 {
-                    RavenConfig = config;
+                    ravenConfig = config;
                 }
             }
         }
 
         private void UpdateAllStores()
         {
-            //LogBuffer.Current.LogPriority = LogPriority.Application;
-
-            lock (this.AllStores)
+            lock (this.allStoreWrappers)
             {
-                foreach (var store in AllStores)
+                foreach (var wrapper in allStoreWrappers)
                 {
-                    this.UpdateInnerStore(store);
+                    wrapper.UpdateInnerStore(wrapper);
                 }
             }
         }
 
-        public DocumentStoreWrapper GetOrCreate(
+        public IDocumentStore GetOrCreate(
             string name,
-            AccessMode accessMode = AccessMode.ReadOnly)
+            AccessMode accessMode = AccessMode.ReadOnly,
+            Action<DocumentStore> initializer = null)
         {
             name.Ensure("name").IsNotNullOrWhiteSpace();
 
-            var existingStore = AllStores.SingleOrDefault(
+            var existingWrapper = allStoreWrappers.SingleOrDefault(
                 store =>
                     store.Name.Equals(name, StringComparison.OrdinalIgnoreCase) &&
                     store.AccessMode == accessMode);
-            if (existingStore != null)
+            if (existingWrapper != null)
             {
-                return existingStore;
+                return existingWrapper;
             }
 
-            var newStore = new DocumentStoreWrapper(name, accessMode);
-            AllStores.Add(newStore);
-            this.UpdateInnerStore(newStore);
+            initializer = initializer ?? (store => store.Initialize());
+            Action<DocumentStoreWrapper> updateInnerStore = 
+                wrapper => this.UpdateInnerStore(wrapper, initializer);
+            var newStore = new DocumentStoreWrapper(name, accessMode, updateInnerStore);
 
+            allStoreWrappers.Add(newStore);
             return newStore;
         }
 
-        private void UpdateInnerStore(DocumentStoreWrapper wrapper)
+        private void UpdateInnerStore(
+            DocumentStoreWrapper wrapper, 
+            Action<DocumentStore> innerStoreInitializer)
         {
             DocumentStore existingInnerStore = wrapper.InnerStore;
             DocumentStore newInnerStore = null;
@@ -102,14 +112,14 @@ namespace Brnkly.Raven
                     return;
                 }
 
-                newInnerStore.Initialize();
+                innerStoreInitializer(newInnerStore);
                 wrapper.InnerStore = newInnerStore;
                 wrapper.IsInitialized = true;
-                //LogBuffer.Current.LogPriority = LogPriority.Application;
-                //LogBuffer.Current.Information(
-                //    "The store '{0}' was updated to point to '{1}'.",
-                //    this.nameWithAccessMode,
-                //    newUrl);
+                logger.Info(
+                    "{0} {1} store Url set to {2}.",
+                    wrapper.AccessMode,
+                    wrapper.Name,
+                    newInnerStore.Url);
             }
             catch (Exception exception)
             {
@@ -129,23 +139,14 @@ namespace Brnkly.Raven
         {
             string newUrl = (newInnerStore == null) ? null : newInnerStore.Url;
             string message = string.Format(
-                "The store '{0}' could not be initialized with " +
-                "the Url '{1}' due to the exception below. ",
-                newInnerStore == null ? null : newInnerStore.Identifier,
-                newUrl);
-
-            if (wrapper.IsInitialized &&
-                newInnerStore != null &&
-                !wrapper.InnerStore.WasDisposed)
-            {
-                message += string.Format(
-                    "The store will continue to use the Raven instance at '{0}'.",
-                    wrapper.InnerStore.Url);
-            }
-
-            //LogBuffer.Current.LogPriority = LogPriority.Application;
-            //LogBuffer.Current.Critical(message);
-            //LogBuffer.Current.Critical(exception);
+                "{0} {1} store Url could not be set to '{2}'. {3}",
+                wrapper.AccessMode, 
+                wrapper.Name, 
+                newUrl,
+                (wrapper.IsInitialized && !wrapper.InnerStore.WasDisposed) 
+                    ? string.Format("Active Url remains {0}.", wrapper.Url) 
+                    : "Store has not been initialized.");
+            logger.ErrorException(message, exception);
         }
 
         internal DocumentStore CreateInnerStore(DocumentStoreWrapper wrapper)
@@ -181,7 +182,7 @@ namespace Brnkly.Raven
 
         private Instance GetClosestInstanceOrDefault(DocumentStoreWrapper wrapper)
         {
-            var store = RavenConfig.Stores.SelectByName(wrapper.Name);
+            var store = ravenConfig.Stores.SelectByName(wrapper.Name);
             Instance instance = null;
             if (store != null)
             {

@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Raven.Abstractions.Data;
+using Raven.Abstractions.Logging;
 using Raven.Abstractions.Replication;
 using Raven.Client.Extensions;
 using Raven.Json.Linq;
@@ -12,6 +13,8 @@ namespace Brnkly.Raven
 {
     public static class ReplicationExtensions
     {
+        private static ILog logger = LogManager.GetCurrentClassLogger();
+
         public static void UpdateTracerDocuments(this RavenHelper raven, Store store)
         {
             var tasks = new List<Task>();
@@ -27,16 +30,32 @@ namespace Brnkly.Raven
 
         private static void UpdateTracerDocument(this RavenHelper raven, Store store, Instance instance)
         {
-            var tracerId = "brnkly/raven/tracers/" + instance.Url.Authority.Replace(":", "_");
-            var docStore = raven.GetDocumentStore(instance.Url.GetServerRootUrl());
-            using (var session = docStore.OpenSession(store.Name))
+            try
             {
-                session.Advanced.UseOptimisticConcurrency = true;
-                var tracer = session.Load<Tracer>(tracerId) 
-                    ?? new Tracer { UpdatedAtUtc = DateTimeOffset.UtcNow };
-                tracer.UpdatedAtUtc = DateTimeOffset.UtcNow;
-                session.Store(tracer, tracerId);
-                session.SaveChanges();
+                var tracerId = "brnkly/raven/tracers/" + instance.Url.Authority.Replace(":", "_");
+                var docStore = raven.GetDocumentStore(instance.Url.GetServerRootUrl());
+                using (var session = docStore.OpenSession(store.Name))
+                {
+                    session.Advanced.UseOptimisticConcurrency = true;
+                    var tracer = session.Load<Tracer>(tracerId)
+                        ?? new Tracer { UpdatedAtUtc = DateTimeOffset.UtcNow };
+                    tracer.UpdatedAtUtc = DateTimeOffset.UtcNow;
+                    session.Store(tracer, tracerId);
+                    session.SaveChanges();
+                }
+
+                logger.Debug("Tracer document updated for {0}", instance.Url);
+            }
+            catch (Exception exception)
+            {
+                logger.ErrorException(
+                    string.Format("Failed to update tracer document for {0}", instance.Url),
+                    exception);
+
+                if (exception.IsFatal())
+                {
+                    throw;
+                }
             }
         }
 
@@ -49,8 +68,7 @@ namespace Brnkly.Raven
                 {
                     results.Add(
                         string.Format(
-                        "Failed to update replication for store {0}, instance: {1}",
-                        store.Name,
+                        "Failed to update replication destinations for {1}",
                         instance.Url));
                 }
             }
@@ -64,15 +82,20 @@ namespace Brnkly.Raven
             {
                 raven.UpdateReplicationDocument(store, instance);
                 raven.EnsureReplicationBundleIsActive(store, instance);
+                logger.Info("Updated replication destinations for {0}", instance.Url);
                 return true;
             }
             catch (Exception exception)
             {
-                //LogBuffer.Current.Error(
-                //    "Failed to update replication for Raven database {0} on {1} due to the following exception:",
-                //    store.Name,
-                //    instance.Name);
-                //LogBuffer.Current.Error(exception);
+                logger.ErrorException(
+                    string.Format("Failed to update replication destinations for {0}.", instance.Url),
+                    exception);
+
+                if (exception.IsFatal())
+                {
+                    throw;
+                }
+
                 return false;
             }
         }
@@ -92,13 +115,6 @@ namespace Brnkly.Raven
                     .ToList();
                 session.Store(replicationDoc);
                 session.SaveChanges();
-                //LogBuffer.Current.Information(
-                //    "Raven database {0} on {1} now replicating to: {2}",
-                //    store.Name,
-                //    instance.Name,
-                //    string.Join(
-                //        ", ",
-                //        instance.ReplicationDestinations.Select(d => d.ServerName)));
             }
         }
 
