@@ -86,7 +86,10 @@
 
         self.placeholderStore = new StoreVM({ name: 'Add a store...', instances: [] });
         self.activeStore = ko.observable(self.placeholderStore);
-        self.setActiveStore = function () { self.activeStore(this); };
+        self.setActiveStore = function () {
+            self.activeStore(this);
+            window.location.hash = this.name();
+        };
 
         self.getStore = function (name) {
             return Enumerable.From(self.stores())
@@ -542,8 +545,21 @@
             $.get("/api/raven/replication/pending", function (data) {
                 ko.mapping.fromJS(data, {}, brnkly.raven);
                 if (brnkly.raven.stores().length > 0) {
+
                     brnkly.raven.activeStore(brnkly.raven.stores()[0]);
-                    Enumerable.From(brnkly.raven.stores()).ForEach(function (store) {
+
+                    var enumerableStores = Enumerable.From(brnkly.raven.stores());
+                    if (window.location.hash.length > 0) {
+                        var storeName = window.location.hash.substring(1);
+                        var store = enumerableStores.Where(function (s) {
+                                return s.name().toLowerCase() == storeName.toLowerCase()
+                        }).FirstOrDefault(null);
+                        if (store){
+                            brnkly.raven.activeStore(store);
+                        }
+                    }
+
+                    enumerableStores.ForEach(function (store) {
                         store.getStats();
                         setInterval(store.getStats, 15000);
                     });
