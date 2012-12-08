@@ -19,13 +19,13 @@ namespace Brnkly.Raven
             new ConcurrentBag<DocumentStoreWrapper>();
         private RavenConfig ravenConfig = new RavenConfig();
 
-        public Uri OperationsUrl { get; private set; }
+        public Uri OperationsStoreUrl { get; private set; }
 
-        public DocumentStoreFactory(Uri operationsUrl)
+        public DocumentStoreFactory(Uri operationsStoreUrl)
         {
-            var trimmedUrl = operationsUrl.TrimTrailingSlash();
+            var trimmedUrl = operationsStoreUrl.TrimTrailingSlash();
             EnsureUriPathIncludesDatabase(trimmedUrl);
-            this.OperationsUrl = trimmedUrl;
+            this.OperationsStoreUrl = trimmedUrl;
         }
 
         public DocumentStoreFactory Initialize()
@@ -35,12 +35,19 @@ namespace Brnkly.Raven
                 return this;
             }
 
+            Action<DocumentStore> initializer = store =>
+                {
+                    store.Initialize();
+                    store.Changes()
+                        .ForDocument(RavenConfig.LiveDocumentId)
+                        .Subscribe(OnConfigChanged);
+                };
             var readOnlyOpsStore = this
-                .GetOrCreate(this.OperationsUrl.GetDatabaseName(), AccessMode.ReadOnly)
+                .GetOrCreate(this.OperationsStoreUrl.GetDatabaseName(), AccessMode.ReadOnly, initializer)
                 .Initialize();
 
             readOnlyOpsStore.DatabaseCommands.EnsureDatabaseExists(
-                this.OperationsUrl.GetDatabaseName());
+                this.OperationsStoreUrl.GetDatabaseName());
 
             LoadRavenConfig(readOnlyOpsStore);
             this.isInitialized = true;
@@ -55,17 +62,6 @@ namespace Brnkly.Raven
                 if (config != null)
                 {
                     ravenConfig = config;
-                }
-            }
-        }
-
-        private void UpdateAllStores()
-        {
-            lock (this.allStoreWrappers)
-            {
-                foreach (var wrapper in allStoreWrappers)
-                {
-                    wrapper.UpdateInnerStore(wrapper);
                 }
             }
         }
@@ -115,8 +111,8 @@ namespace Brnkly.Raven
                 innerStoreInitializer(newInnerStore);
                 wrapper.InnerStore = newInnerStore;
                 wrapper.IsInitialized = true;
-                logger.Info(
-                    "{0} {1} store Url set to {2}.",
+
+                logger.Info("{0} {1} store Url set to {2}.",
                     wrapper.AccessMode,
                     wrapper.Name,
                     newInnerStore.Url);
@@ -128,6 +124,18 @@ namespace Brnkly.Raven
                 if (exception.IsFatal())
                 {
                     throw;
+                }
+            }
+        }
+
+        private void OnConfigChanged(DocumentChangeNotification notification)
+        {
+            logger.Info("RavenConfig change notification received.");
+            lock (this.allStoreWrappers)
+            {
+                foreach (var wrapper in allStoreWrappers)
+                {
+                    wrapper.UpdateInnerStore(wrapper);
                 }
             }
         }
@@ -165,7 +173,7 @@ namespace Brnkly.Raven
 
         internal DocumentStore CreateDocumentStore(Instance storeInstance)
         {
-            var databaseName = storeInstance.Url.GetDatabaseName();
+            var databaseName = storeInstance.Url.GetDatabaseName(throwIfNotFound: true);
             var store = new DocumentStore
             {
                 Identifier = databaseName,
@@ -194,7 +202,7 @@ namespace Brnkly.Raven
             instance = instance ?? 
                 new Instance
                 {
-                    Url = new Uri(this.OperationsUrl, wrapper.Name.ToLowerInvariant()),
+                    Url = new Uri(this.OperationsStoreUrl, wrapper.Name.ToLowerInvariant()),
                     AllowReads = true,
                     AllowWrites = wrapper.AccessMode == AccessMode.ReadWrite
                 };
