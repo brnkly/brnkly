@@ -137,11 +137,11 @@
             return false;
         });
 
-        self.save = function() {
+        self.save = function () {
             $.ajax({
                 url: '/api/raven/replication/pending',
                 type: 'PUT',
-                data: ko.toJSON(self),
+                data: ko.mapping.toJSON(self),
                 contentType: "application/json;charset=utf-8",
                 beforeSend: function (jqXHR, settings) { $('#working').show(); },
                 complete: function (jqXHR, textStatus) { $('#working').hide(); },
@@ -195,7 +195,7 @@
             $.ajax({
                 url: '/api/raven/replication/stats',
                 type: 'POST',
-                data: ko.toJSON(self),
+                data: ko.mapping.toJSON(self),
                 contentType: "application/json;charset=utf-8",
                 success: function (data) {
                     var dirty = brnkly.raven.dirtyFlag.isDirty();
@@ -214,7 +214,7 @@
             $.ajax({
                 url: '/api/raven/replication/tracers',
                 type: 'POST',
-                data: ko.toJSON(self),
+                data: ko.mapping.toJSON(self),
                 contentType: "application/json;charset=utf-8",
                 success: function (data) {
                     message('success', 'Tracer documents updated');

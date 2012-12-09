@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Web.Http;
 using System.Web.Http.Dependencies;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 
 namespace Brnkly
@@ -16,6 +17,8 @@ namespace Brnkly
             jsonFormatter.SerializerSettings.ContractResolver = 
                 new CamelCasePropertyNamesContractResolver();
             config.Formatters.Add(jsonFormatter);
+            jsonFormatter.SerializerSettings.Converters.Add(
+                new StringEnumConverter());
 
             // api/raven/replication/pending
             config.Routes.MapHttpRoute(
