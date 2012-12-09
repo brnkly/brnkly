@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Threading;
 using Raven.Abstractions.Data;
 using Raven.Abstractions.Logging;
 using Raven.Client;
@@ -19,6 +20,8 @@ namespace Brnkly.Raven
         private RavenConfig ravenConfig = new RavenConfig();
         private Uri operationsStoreUrl;
         private bool isInitialized;
+        private IDocumentStore readOnlyOpsStore;
+        private int updatingRavenConfig = 0;
 
         public DocumentStoreFactory(string connectionStringName = "Brnkly.Raven.DocumentStoreFactory")
         {
@@ -44,23 +47,30 @@ namespace Brnkly.Raven
                     store.Initialize();
                     store.Changes()
                         .ForDocument(RavenConfig.LiveDocumentId)
-                        .Subscribe(OnConfigChanged);
+                        .Subscribe(OnRavenConfigChanged);
                 };
-            var readOnlyOpsStore = this
+
+            readOnlyOpsStore = this
                 .GetOrCreate(this.operationsStoreUrl.GetDatabaseName(), AccessMode.ReadOnly, initializer)
                 .Initialize();
 
             readOnlyOpsStore.DatabaseCommands.EnsureDatabaseExists(
                 this.operationsStoreUrl.GetDatabaseName());
 
-            LoadRavenConfig(readOnlyOpsStore);
+            LoadRavenConfig();
+
+            // Force immediate update, in case the config says to use 
+            // an instance different than what is specified in the config file.
+            OnRavenConfigChanged(new DocumentChangeNotification { Id = RavenConfig.LiveDocumentId });
+
             this.isInitialized = true;
+
             return this;
         }
 
-        private void LoadRavenConfig(IDocumentStore opsStore)
+        private void LoadRavenConfig()
         {
-            using (var session = opsStore.OpenSession())
+            using (var session = this.readOnlyOpsStore.OpenSession())
             {
                 var config = session.Load<RavenConfig>(RavenConfig.LiveDocumentId);
                 if (config != null)
@@ -101,25 +111,28 @@ namespace Brnkly.Raven
         {
             DocumentStore existingInnerStore = wrapper.InnerStore;
             DocumentStore newInnerStore = null;
+            bool newInnerStoreApplied = false;
 
             try
             {
-                newInnerStore = this.CreateInnerStore(wrapper);
+                var storeInstance = GetClosestInstanceOrDefault(wrapper);
 
                 if (wrapper.IsInitialized &&
-                    wrapper.InnerStore.Url.Equals(newInnerStore.Url, StringComparison.OrdinalIgnoreCase))
+                    wrapper.InnerStore.Url.Equals(storeInstance.Url.ToString(), StringComparison.OrdinalIgnoreCase) &&
+                    !wrapper.InnerStore.WasDisposed)
                 {
+                    logger.Info("{0} {1} store Url did not change. It remains {2}.", wrapper.AccessMode, wrapper.Name, wrapper.InnerStore.Url);
                     return;
                 }
+
+                newInnerStore = this.CreateDocumentStore(storeInstance, wrapper.AccessMode);
 
                 innerStoreInitializer(newInnerStore);
                 wrapper.InnerStore = newInnerStore;
                 wrapper.IsInitialized = true;
+                newInnerStoreApplied = true;
 
-                logger.Info("{0} {1} store Url set to {2}.",
-                    wrapper.AccessMode,
-                    wrapper.Name,
-                    newInnerStore.Url);
+                logger.Info("{0} {1} store Url set to {2}.", wrapper.AccessMode, wrapper.Name, newInnerStore.Url);
             }
             catch (Exception exception)
             {
@@ -130,16 +143,58 @@ namespace Brnkly.Raven
                     throw;
                 }
             }
+            finally
+            {
+                if (newInnerStoreApplied)
+                {
+                    if (existingInnerStore != null)
+                    {
+                        existingInnerStore.Dispose();
+                    }
+                }
+                else
+                {
+                    if (newInnerStore != null)
+                    {
+                        newInnerStore.Dispose();
+                    }
+                }
+            }
         }
 
-        private void OnConfigChanged(DocumentChangeNotification notification)
+        private void OnRavenConfigChanged(DocumentChangeNotification notification)
         {
-            logger.Info("RavenConfig change notification received.");
-            lock (this.allStoreWrappers)
+            if (Interlocked.Exchange(ref updatingRavenConfig, 1) == 0)
             {
-                foreach (var wrapper in allStoreWrappers)
+                try
                 {
-                    wrapper.UpdateInnerStore(wrapper);
+                    logger.Debug("RavenConfig change notification received.");
+
+                    LoadRavenConfig();
+                    
+                    lock (this.allStoreWrappers)
+                    {
+                        foreach (var wrapper in allStoreWrappers)
+                        {
+                            wrapper.UpdateInnerStore(wrapper);
+                        }
+                    }
+
+                    // When the Url of the readOnlyOpsStore changes, we may receive
+                    // change notifications from both old and new inner stores.  
+                    // Ignore one of them.
+                    Thread.Sleep(2000);
+                }
+                catch (Exception exception)
+                {
+                    if (exception.IsFatal())
+                    {
+                        throw;
+                    }
+                }
+                finally
+                {
+                    Interlocked.Exchange(ref updatingRavenConfig, 0);
                 }
             }
         }
@@ -161,21 +216,7 @@ namespace Brnkly.Raven
             logger.ErrorException(message, exception);
         }
 
-        internal DocumentStore CreateInnerStore(DocumentStoreWrapper wrapper)
-        {
-            var storeInstance = GetClosestInstanceOrDefault(wrapper);
-            var innerStore = CreateDocumentStore(storeInstance);
-
-            if (wrapper.AccessMode == AccessMode.ReadOnly)
-            {
-                innerStore.RegisterListener((IDocumentStoreListener)new ReadOnlyListener());
-                innerStore.RegisterListener((IDocumentDeleteListener)new ReadOnlyListener());
-            }
-
-            return innerStore;
-        }
-
-        internal DocumentStore CreateDocumentStore(Instance storeInstance)
+        internal DocumentStore CreateDocumentStore(Instance storeInstance, AccessMode accessMode)
         {
             var databaseName = storeInstance.Url.GetDatabaseName(throwIfNotFound: true);
             var store = new DocumentStore
@@ -188,6 +229,12 @@ namespace Brnkly.Raven
                     FailoverBehavior = FailoverBehavior.AllowReadsFromSecondariesAndWritesToSecondaries
                 }
             };
+
+            if (accessMode == AccessMode.ReadOnly)
+            {
+                store.RegisterListener((IDocumentStoreListener)new ReadOnlyListener());
+                store.RegisterListener((IDocumentDeleteListener)new ReadOnlyListener());
+            }
 
             return store;
         }
