@@ -2,9 +2,11 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Raven.Abstractions.Data;
 using Raven.Abstractions.Logging;
 using Raven.Client;
+using Raven.Client.Connection;
 using Raven.Client.Document;
 using Raven.Client.Extensions;
 using Raven.Client.Listeners;
@@ -19,11 +21,16 @@ namespace Brnkly.Raven
             new ConcurrentBag<DocumentStoreWrapper>();
         private RavenConfig ravenConfig = new RavenConfig();
         private Uri operationsStoreUrl;
-        private bool isInitialized;
+        private bool isInitialized = false;
         private IDocumentStore readOnlyOpsStore;
-        private int updatingRavenConfig = 0;
 
-        public DocumentStoreFactory(string connectionStringName = "Brnkly.Raven.DocumentStoreFactory")
+        private int updatingRavenConfig = 0;
+        private Timer updateTimer;
+        private TimeSpan updateInterval = TimeSpan.FromMinutes(1);
+        private DateTimeOffset lastUpdatedRavenConfig = DateTimeOffset.MinValue;
+        private bool disposed = false;
+
+        public DocumentStoreFactory(string connectionStringName = "Brnkly.Raven.Config")
         {
             var parser = ConnectionStringParser<RavenConnectionStringOptions>
                 .FromConnectionStringName(connectionStringName);
@@ -44,7 +51,10 @@ namespace Brnkly.Raven
 
             Action<DocumentStore> initializer = store =>
                 {
+                    store.Conventions.FailoverBehavior =
+                        FailoverBehavior.AllowReadsFromSecondariesAndWritesToSecondaries;
                     store.Initialize();
+                    store.Changes().ConnectionStatusCahnged += ReadOnlyOpsStore_ConnectionStatusCahnged;
                     store.Changes()
                         .ForDocument(RavenConfig.LiveDocumentId)
                         .Subscribe(OnRavenConfigChanged);
@@ -54,30 +64,15 @@ namespace Brnkly.Raven
                 .GetOrCreate(this.operationsStoreUrl.GetDatabaseName(), AccessMode.ReadOnly, initializer)
                 .Initialize();
 
-            readOnlyOpsStore.DatabaseCommands.EnsureDatabaseExists(
-                this.operationsStoreUrl.GetDatabaseName());
-
-            LoadRavenConfig();
-
-            // Force immediate update, in case the config says to use 
-            // an instance different than what is specified in the config file.
-            OnRavenConfigChanged(new DocumentChangeNotification { Id = RavenConfig.LiveDocumentId });
-
+            ApplyRavenConfig();
+            updateTimer = new Timer(
+                _ => ApplyRavenConfig(fromTimer: true),
+                null,
+                this.updateInterval,
+                this.updateInterval);
             this.isInitialized = true;
 
             return this;
-        }
-
-        private void LoadRavenConfig()
-        {
-            using (var session = this.readOnlyOpsStore.OpenSession())
-            {
-                var config = session.Load<RavenConfig>(RavenConfig.LiveDocumentId);
-                if (config != null)
-                {
-                    ravenConfig = config;
-                }
-            }
         }
 
         public IDocumentStore GetOrCreate(
@@ -121,7 +116,7 @@ namespace Brnkly.Raven
                     wrapper.InnerStore.Url.Equals(storeInstance.Url.ToString(), StringComparison.OrdinalIgnoreCase) &&
                     !wrapper.InnerStore.WasDisposed)
                 {
-                    logger.Info("{0} {1} store Url did not change. It remains {2}.", wrapper.AccessMode, wrapper.Name, wrapper.InnerStore.Url);
+                    logger.Debug("{0} {1} store Url did not change. It remains {2}.", wrapper.AccessMode, wrapper.Name, wrapper.InnerStore.Url);
                     return;
                 }
 
@@ -149,6 +144,9 @@ namespace Brnkly.Raven
                 {
                     if (existingInnerStore != null)
                     {
+                        // Wait for current operations to complete.
+                        Thread.Sleep(5000);
+                        logger.Debug("Disposing store for {0}", existingInnerStore.Url);
                         existingInnerStore.Dispose();
                     }
                 }
@@ -156,20 +154,70 @@ namespace Brnkly.Raven
                 {
                     if (newInnerStore != null)
                     {
+                        logger.Debug("Disposing store for {0}", newInnerStore.Url);
                         newInnerStore.Dispose();
                     }
                 }
             }
         }
 
+        private void ReadOnlyOpsStore_FailoverStatusChanged(object sender, FailoverStatusChangedEventArgs e)
+        {
+            if (!this.isInitialized)
+            {
+                return;
+            }
+
+            if (e.Failing)
+            {
+                logger.Error("ReadOnly operations store instance failed: {0}.", e.Url);
+            }
+            else
+            {
+                logger.Info("ReadOnly operations store instance recovered: {0}.", e.Url);
+            }
+
+            this.ApplyRavenConfig();
+        }
+
+        private void ReadOnlyOpsStore_ConnectionStatusCahnged(object sender, EventArgs e)
+        {
+            if (!this.isInitialized)
+            {
+                return;
+            }
+
+            if (this.readOnlyOpsStore.Changes().Connected)
+            {
+                logger.Info("Connected to ReadOnly operations store at {0}.", this.readOnlyOpsStore.Url);
+            }
+            else
+            {
+                logger.Warn("Lost connection to ReadOnly operations store at {0}.", this.readOnlyOpsStore.Url);
+            }
+
+            this.ApplyRavenConfig();
+        }
+
         private void OnRavenConfigChanged(DocumentChangeNotification notification)
+        {
+            this.ApplyRavenConfig();
+        }
+
+        private void ApplyRavenConfig(bool fromTimer = false)
         {
             if (Interlocked.Exchange(ref updatingRavenConfig, 1) == 0)
             {
                 try
                 {
-                    logger.Debug("RavenConfig change notification received.");
+                    if (fromTimer &&
+                        DateTimeOffset.UtcNow < this.lastUpdatedRavenConfig.Add(updateInterval))
+                    {
+                        logger.Debug("Raven config timer doing nothing, since config was updated recently.");
+                        return;
+                    }
 
+                    logger.Debug("Loading Raven config...");
                     LoadRavenConfig();
                     
                     lock (this.allStoreWrappers)
@@ -180,13 +228,16 @@ namespace Brnkly.Raven
                         }
                     }
 
+                    this.lastUpdatedRavenConfig = DateTimeOffset.UtcNow;
                     // When the Url of the readOnlyOpsStore changes, we may receive
                     // change notifications from both old and new inner stores.  
-                    // Ignore one of them.
-                    Thread.Sleep(2000);
+                    // A small delay should cause one to be ignored.
+                    Thread.Sleep(1000);
                 }
                 catch (Exception exception)
                 {
+                    logger.ErrorException("Error updating Raven config", exception);
+
                     if (exception.IsFatal())
                     {
                         throw;
@@ -195,6 +246,18 @@ namespace Brnkly.Raven
                 finally
                 {
                     Interlocked.Exchange(ref updatingRavenConfig, 0);
+                }
+            }
+        }
+
+        private void LoadRavenConfig()
+        {
+            using (var session = this.readOnlyOpsStore.OpenSession())
+            {
+                var config = session.Load<RavenConfig>(RavenConfig.LiveDocumentId);
+                if (config != null)
+                {
+                    this.ravenConfig = config;
                 }
             }
         }
@@ -264,6 +327,28 @@ namespace Brnkly.Raven
         private void EnsureUriPathIncludesDatabase(Uri uri)
         {
             uri.GetDatabaseName(throwIfNotFound: true);
+        }
+
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (!this.disposed)
+            {
+                if (disposing)
+                {
+                    if (this.updateTimer != null)
+                    {
+                        this.updateTimer.Dispose();
+                    }
+                }
+
+                this.disposed = true;
+            }
         }
     }
 }

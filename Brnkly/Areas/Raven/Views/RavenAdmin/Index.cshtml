@@ -44,7 +44,7 @@
 <div data-bind="template: { name: 'raven-store-template', data: brnkly.raven.activeStore() },
                 visible: brnkly.raven.stores().length > 0"></div>
 
-<div data-bind="visible: brnkly.raven.stores().length == 0">
+<div data-bind="visible: brnkly.loading() == false && brnkly.raven.stores().length == 0">
     <a href="#add-store-modal" data-toggle="modal">Add a store</a> to get started...
 </div>
 

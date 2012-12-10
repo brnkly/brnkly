@@ -68,7 +68,7 @@ namespace Brnkly.Raven
                 {
                     results.Add(
                         string.Format(
-                        "Failed to update replication destinations for {1}",
+                        "Failed to update replication destinations for {0}",
                         instance.Url));
                 }
             }
@@ -80,9 +80,17 @@ namespace Brnkly.Raven
         {
             try
             {
-                raven.UpdateReplicationDocument(store, instance);
+                var destinations = raven.UpdateReplicationDocument(store, instance);
                 raven.EnsureReplicationBundleIsActive(store, instance);
-                logger.Info("Updated replication destinations for {0}", instance.Url);
+                logger.Info(
+                    "Updated replication destinations for {0} to: [{1}]", 
+                    instance.Url,
+                    string.Join(", ", destinations.Select(d => string.Format(
+                        "{0}{1}", 
+                        d.Url, 
+                        d.TransitiveReplicationBehavior == TransitiveReplicationOptions.Replicate 
+                            ? " (transitive)" 
+                            : string.Empty))));
                 return true;
             }
             catch (Exception exception)
@@ -100,7 +108,7 @@ namespace Brnkly.Raven
             }
         }
 
-        private static void UpdateReplicationDocument(this RavenHelper raven, Store store, Instance instance)
+        private static IEnumerable<ReplicationDestination> UpdateReplicationDocument(this RavenHelper raven, Store store, Instance instance)
         {
             var docStore = raven.GetDocumentStore(instance.Url.GetServerRootUrl());
             docStore.DatabaseCommands.EnsureDatabaseExists(store.Name);
@@ -115,6 +123,8 @@ namespace Brnkly.Raven
                     .ToList();
                 session.Store(replicationDoc);
                 session.SaveChanges();
+
+                return replicationDoc.Destinations;
             }
         }
 

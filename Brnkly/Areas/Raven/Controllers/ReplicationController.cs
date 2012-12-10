@@ -76,10 +76,14 @@ namespace Brnkly.Raven.Admin.Controllers
             this.RavenSession.Store(config.Live, RavenConfig.LiveDocumentId);
             this.RavenSession.SaveChanges();
 
+            var errors = new List<string>();
             foreach (var store in config.Live.Stores)
             {
-                this.ravenHelper.UpdateReplicationDocuments(store);
+                errors.AddRange(
+                    this.ravenHelper.UpdateReplicationDocuments(store));
             }
+
+            // TODO: Add errors to response.
 
             var newEtag = this.RavenSession.Advanced.GetEtagFor(config.Live).Value;
             return GetCreatedResponse(newEtag);

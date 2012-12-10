@@ -126,7 +126,7 @@
             var firstPort;
             for (var i = 0; i < self.stores().length; i++) {
                 for (var j = 0; j < self.stores()[i].instances().length; j++) {
-                    var currentPort = getUri(self.stores()[i].instances()[j].url).port;
+                    var currentPort = getUri(self.stores()[i].instances()[j].url()).port;
                     if (!firstPortSet) {
                         firstPort = currentPort;
                         firstPortSet = true;
@@ -504,7 +504,7 @@
     function InstanceIndexStatsVM(data) {
         var self = this;
         ko.mapping.fromJS(data, {}, self);
-        self.displayName = getDisplayName(data.url);
+        self.displayName = getDisplayName(data.url());
 
         self.status = ko.computed(function () {
             if (!self.exists()) {
