@@ -504,7 +504,7 @@
     function InstanceIndexStatsVM(data) {
         var self = this;
         ko.mapping.fromJS(data, {}, self);
-        self.displayName = getDisplayName(data.url());
+        self.displayName = getDisplayName(data.url);
 
         self.status = ko.computed(function () {
             if (!self.exists()) {
