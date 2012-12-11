@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Raven.Abstractions.Data;
@@ -57,7 +58,7 @@ namespace Brnkly.Raven
                     store.Changes().ConnectionStatusCahnged += ReadOnlyOpsStore_ConnectionStatusCahnged;
                     store.Changes()
                         .ForDocument(RavenConfig.LiveDocumentId)
-                        .Subscribe(OnRavenConfigChanged);
+                        .Subscribe(notification => this.ApplyRavenConfig());
                 };
 
             readOnlyOpsStore = this
@@ -123,6 +124,7 @@ namespace Brnkly.Raven
                 newInnerStore = this.CreateDocumentStore(storeInstance, wrapper.AccessMode);
 
                 innerStoreInitializer(newInnerStore);
+
                 wrapper.InnerStore = newInnerStore;
                 wrapper.IsInitialized = true;
                 newInnerStoreApplied = true;
@@ -145,6 +147,7 @@ namespace Brnkly.Raven
                     if (existingInnerStore != null)
                     {
                         // Wait for current operations to complete.
+                        // This is on a background thread.
                         Thread.Sleep(5000);
                         logger.Debug("Disposing store for {0}", existingInnerStore.Url);
                         existingInnerStore.Dispose();
@@ -196,11 +199,6 @@ namespace Brnkly.Raven
                 logger.Warn("Lost connection to ReadOnly operations store at {0}.", this.readOnlyOpsStore.Url);
             }
 
-            this.ApplyRavenConfig();
-        }
-
-        private void OnRavenConfigChanged(DocumentChangeNotification notification)
-        {
             this.ApplyRavenConfig();
         }
 
