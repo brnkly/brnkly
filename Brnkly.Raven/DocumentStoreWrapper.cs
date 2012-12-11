@@ -54,6 +54,8 @@ namespace Brnkly.Raven
     /// </example>
     public sealed class DocumentStoreWrapper : IDocumentStore
     {
+        private string identifier;
+
         public string Name { get; private set; }
         public AccessMode AccessMode { get; private set; }
         public bool IsInitialized { get; internal set; }
@@ -93,7 +95,7 @@ namespace Brnkly.Raven
         {
             if (database != null)
             {
-                throw new NotImplementedException("DocumentStoreWrapper does not support specifying a database name in this method. The database name must be specified in the constructor.");
+                throw GetDatabaseNotSupportedException();
             }
 
             this.ThrowIfNotInitialized();
@@ -138,7 +140,16 @@ namespace Brnkly.Raven
 
         public string Identifier
         {
-            get { return this.InnerStore.Identifier; }
+            get 
+            {
+                if (string.IsNullOrWhiteSpace(this.identifier))
+                {
+                    this.identifier = (this.IsInitialized ? this.Url : this.Name) + 
+                        " (" + this.AccessMode + ")";
+                }
+
+                return this.identifier;
+            }
             set { throw new NotSupportedException( "DocumentStoreWrapper does not support setting Identifier."); }
         }
 

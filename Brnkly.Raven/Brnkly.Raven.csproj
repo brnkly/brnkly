@@ -94,6 +94,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AggressiveCacheSettings.cs" />
+    <Compile Include="CachingExtensions.cs" />
     <Compile Include="IndexingExtensions.cs" />
     <Compile Include="StatsExtensions.cs" />
     <Compile Include="IndexingStatistics.cs" />
@@ -109,6 +111,7 @@
     <Compile Include="Store.cs" />
     <Compile Include="ReadOnlyListener.cs" />
     <Compile Include="AccessMode.cs" />
+    <Compile Include="StorePropertyExtensions.cs" />
     <Compile Include="StoreStats.cs" />
     <Compile Include="Temp.cs" />
     <Compile Include="Tracer.cs" />
