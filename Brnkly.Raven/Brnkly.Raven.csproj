@@ -94,8 +94,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AggressiveCacheSettings.cs" />
-    <Compile Include="CachingExtensions.cs" />
+    <Compile Include="AggressiveCachingSettings.cs" />
+    <Compile Include="AggressiveCachingExtensions.cs" />
     <Compile Include="IndexingExtensions.cs" />
     <Compile Include="StatsExtensions.cs" />
     <Compile Include="IndexingStatistics.cs" />
