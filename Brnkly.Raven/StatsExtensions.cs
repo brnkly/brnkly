@@ -17,7 +17,7 @@ namespace Brnkly.Raven
         {
             public Uri Url { get; set; }
             public DatabaseStatistics DatabaseStats { get; set; }
-            public ReplicationStatisticsTemp ReplicationStats { get; set; }
+            public ReplicationStatistics ReplicationStats { get; set; }
             public Dictionary<string, int> IndexHashCodes { get; set; }
 
             public InstanceStatsHolder()
@@ -93,7 +93,7 @@ namespace Brnkly.Raven
 
                     var data = await replicationStats[instance.Url];
                     response.ReplicationStats = new RavenImports.JsonSerializer()
-                        .Deserialize<ReplicationStatisticsTemp>(new RavenJTokenReader(data));
+                        .Deserialize<ReplicationStatistics>(new RavenJTokenReader(data));
                 }
                 catch (Exception exception)
                 {
@@ -104,7 +104,7 @@ namespace Brnkly.Raven
                     response.DatabaseStats = response.DatabaseStats
                         ?? new DatabaseStatistics();
                     response.ReplicationStats = response.ReplicationStats
-                        ?? new ReplicationStatisticsTemp { Self = response.Url.ToString() };
+                        ?? new ReplicationStatistics { Self = response.Url.ToString() };
                 }
 
                 responses.Add(response);

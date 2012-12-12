@@ -113,7 +113,6 @@
     <Compile Include="AccessMode.cs" />
     <Compile Include="StorePropertyExtensions.cs" />
     <Compile Include="StoreStats.cs" />
-    <Compile Include="Temp.cs" />
     <Compile Include="Tracer.cs" />
     <Compile Include="Web\RavenApiController.cs" />
     <Compile Include="Web\RavenMvcController.cs" />
