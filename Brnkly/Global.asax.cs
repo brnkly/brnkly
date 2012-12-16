@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Linq;
 using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Optimization;
@@ -38,11 +35,8 @@ namespace Brnkly
 
         private string[] AppendInstalledAreaPaths(string[] original)
         {
-            var newPaths = original.Select(
-                path => path.Replace("~/Areas", "~/InstalledAreas"));
-            return original.Concat(newPaths)
-                .Where(path => path.EndsWith(".cshtml"))
-                .ToArray();
+            var newPaths = original.Select(path => path.Replace("~/Areas", "~/InstalledAreas"));
+            return original.Concat(newPaths).Where(path => path.EndsWith(".cshtml")).ToArray();
         }
     }
 }
