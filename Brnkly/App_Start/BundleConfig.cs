@@ -18,18 +18,18 @@ namespace Brnkly
 
             bundles.Add(new ScriptBundle("~/scripts/brnkly-raven")
                 .Include(
-                    "~/Areas/Raven/Scripts/KnockoutBootstrapCheckboxBinding.js",
-                    "~/Areas/Raven/Scripts/KnockoutBootstrapRadioBinding.js",
-                    "~/Areas/Raven/Scripts/KnockoutDirtyFlag.js",
-                    "~/Areas/Raven/Scripts/BrnklyRaven.js"));
+                    "~/Areas/Brnkly/Scripts/KnockoutBootstrapCheckboxBinding.js",
+                    "~/Areas/Brnkly/Scripts/KnockoutBootstrapRadioBinding.js",
+                    "~/Areas/Brnkly/Scripts/KnockoutDirtyFlag.js",
+                    "~/Areas/Brnkly/Scripts/BrnklyRaven.js"));
 
             bundles.Add(new StyleBundle("~/content/bootstrap")
                 .Include(
                     "~/Content/bootstrap-{version}.css", 
                     "~/Content/bootstrap-responsive-{version}.css"));
             
-            bundles.Add(new StyleBundle("~/content/site")
-                .Include("~/Content/Site.css"));
+            bundles.Add(new StyleBundle("~/content/brnkly")
+                .Include("~/Content/Brnkly.css"));
             
             BundleTable.EnableOptimizations = true;
         }

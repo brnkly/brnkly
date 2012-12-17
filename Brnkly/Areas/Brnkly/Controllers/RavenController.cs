@@ -2,7 +2,7 @@
 
 namespace Brnkly.Raven.Admin.Controllers
 {
-    public class RavenAdminController : Controller
+    public class RavenController : Controller
     {
         public ActionResult Index()
         {

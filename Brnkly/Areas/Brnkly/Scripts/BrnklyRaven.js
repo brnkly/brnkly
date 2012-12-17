@@ -139,7 +139,7 @@
 
         self.save = function () {
             $.ajax({
-                url: '/api/raven/replication/pending',
+                url: '/api/brnkly/raven/replication/pending',
                 type: 'PUT',
                 data: ko.mapping.toJSON(self),
                 contentType: "application/json;charset=utf-8",
@@ -160,7 +160,7 @@
 
         self.publish = function() {
             $.ajax({
-                url: '/api/raven/replication/live',
+                url: '/api/brnkly/raven/replication/live',
                 type: 'PUT',
                 data: '"' + self.etag() + '"',
                 contentType: "application/json;charset=utf-8",
@@ -193,7 +193,7 @@
         self.statsRefreshedAt = ko.observable('never');
         self.getStats = function () {
             $.ajax({
-                url: '/api/raven/replication/stats',
+                url: '/api/brnkly/raven/replication/stats',
                 type: 'POST',
                 data: ko.mapping.toJSON(self),
                 contentType: "application/json;charset=utf-8",
@@ -212,7 +212,7 @@
 
         self.updateTracers = function () {
             $.ajax({
-                url: '/api/raven/replication/tracers',
+                url: '/api/brnkly/raven/replication/tracers',
                 type: 'POST',
                 data: ko.mapping.toJSON(self),
                 contentType: "application/json;charset=utf-8",
@@ -444,7 +444,7 @@
                 return;
             }
             $.ajax({
-                url: '/api/raven/indexing/copy',
+                url: '/api/brnkly/raven/indexing/copy',
                 type: 'POST',
                 data: ko.toJSON({
                     fromInstanceUrl: self.fromInstanceUrl(),
@@ -464,7 +464,7 @@
 
         self.reset = function (instanceUrl) {
             $.ajax({
-                url: '/api/raven/indexing/reset',
+                url: '/api/brnkly/raven/indexing/reset',
                 type: 'POST',
                 data: ko.toJSON({
                     instanceUrl: instanceUrl,
@@ -483,7 +483,7 @@
 
         self.delete = function (instanceUrl) {
             $.ajax({
-                url: '/api/raven/indexing/delete',
+                url: '/api/brnkly/raven/indexing/delete',
                 type: 'DELETE',
                 data: ko.toJSON({
                     instanceUrl: instanceUrl,
@@ -536,13 +536,13 @@
         $('#working').show();
         brnkly.loading = ko.observable(true);
 
-        $.get("/api/raven/replication/live", function (data) {
+        $.get("/api/brnkly/raven/replication/live", function (data) {
             if (!data) { data = {}; }
             if (!data.stores) { data.stores = []; }
 
             brnkly.raven = new RavenConfigVM(data);
 
-            $.get("/api/raven/replication/pending", function (data) {
+            $.get("/api/brnkly/raven/replication/pending", function (data) {
                 ko.mapping.fromJS(data, {}, brnkly.raven);
                 if (brnkly.raven.stores().length > 0) {
 

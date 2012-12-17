@@ -20,10 +20,9 @@ namespace Brnkly
             jsonFormatter.SerializerSettings.Converters.Add(
                 new StringEnumConverter());
 
-            // api/raven/replication/pending
             config.Routes.MapHttpRoute(
-                name: "Api-Raven-Default",
-                routeTemplate: "api/raven/{controller}/{action}");
+                name: "Api-Brnkly-Raven-Default",
+                routeTemplate: "api/brnkly/raven/{controller}/{action}");
         }
     }
 
