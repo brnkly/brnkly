@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Brnkly")]
+[assembly: AssemblyTitle("Brnkly.Admin")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Brnkly")]
+[assembly: AssemblyProduct("Brnkly.Admin")]
 [assembly: AssemblyCopyright("Copyright © NBC News Digital 2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("937e0247-025e-44d6-9d7a-46cbc7a0adf3")]
+[assembly: Guid("76161ce9-5743-4533-b995-fa38785df3a4")]
 
 // Version information for an assembly consists of the following four values:
 //
