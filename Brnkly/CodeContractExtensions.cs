@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Brnkly
 {
@@ -42,13 +38,13 @@ namespace Brnkly
         }
 
         public static ContractParameter<string> MinLength(
-            this ContractParameter<string> param, 
+            this ContractParameter<string> param,
             int minLength)
         {
             if (param.Value.Length < minLength)
             {
                 throw new ArgumentException(
-                    string.Format("Parameter must be at least {0} characters long.", minLength), 
+                    string.Format("Parameter must be at least {0} characters long.", minLength),
                     param.Name);
             }
 
@@ -59,7 +55,7 @@ namespace Brnkly
             this ContractParameter<string> param,
             int maxLength)
         {
-            if(maxLength < param.Value.Length)
+            if (maxLength < param.Value.Length)
             {
                 throw new ArgumentException(
                     string.Format("Parameter must be no more than {0} characters long.", maxLength),
@@ -70,14 +66,14 @@ namespace Brnkly
         }
 
         public static ContractParameter<string> StartsWith(
-            this ContractParameter<string> param, 
+            this ContractParameter<string> param,
             string prefix,
             StringComparison comparison = StringComparison.OrdinalIgnoreCase)
         {
             if (!param.Value.StartsWith(prefix, comparison))
             {
                 throw new ArgumentException(
-                    string.Format("Parameter must start with '{0}'.", prefix), 
+                    string.Format("Parameter must start with '{0}'.", prefix),
                     param.Name);
             }
 
