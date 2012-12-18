@@ -114,7 +114,6 @@
     <Compile Include="Areas\Raven\Models\InstanceModel.cs" />
     <Compile Include="Areas\Raven\Models\RavenConfigModel.cs" />
     <Compile Include="Areas\Raven\Models\StoreModel.cs" />
-    <Compile Include="Areas\Raven\WrappedMvcDependencyResolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
