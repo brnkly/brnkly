@@ -27,20 +27,20 @@ task Clean {
 }
 
 task Init -depends Verify45, Clean {
-	Get-ChildItem -path $base_dir -include AssemblyInfo.cs -recurse | 
-		Where { $_ -notmatch [regex]::Escape($lib_dir) } |
-		ForEach {		
-			$projectName = Split-Path (Split-Path (Split-Path $_.FullName)) -Leaf;
-			Set-AssemblyInfo `
-				-file $_.FullName `
-				-version $build_number `
-				-title $projectName `
-				-product "$projectName v$build_number" `
-				-clsCompliant "true" 
-		}
-		
-	#new-item $release_dir -itemType directory
-	#new-item $buildartifacts_dir -itemType directory
+
+	if($env:buildlabel -eq $null) {
+		$env:buildlabel = "777"
+	}
+
+	exec { git update-index --assume-unchanged "$base_dir\CommonAssemblyInfo.cs" }
+	$commit = Get-Git-Commit
+	(Get-Content "$base_dir\CommonAssemblyInfo.cs") | 
+		Foreach-Object { $_ -replace ".777.", ".$($env:buildlabel)." } |
+		Foreach-Object { $_ -replace "{commit}", $commit } |
+		Set-Content "$base_dir\CommonAssemblyInfo.cs" -Encoding UTF8
+	
+	New-Item $release_dir -itemType directory -ErrorAction SilentlyContinue | Out-Null
+	New-Item $buildartifacts_dir -itemType directory -ErrorAction SilentlyContinue | Out-Null
 }
 
 task Compile -depends Init {
