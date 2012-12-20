@@ -3,6 +3,7 @@ Properties {
 	$lib_dir				= "$base_dir\lib"
 	$build_dir 				= "$base_dir\build"
 	$buildartifacts_dir		= "$build_dir\"
+	$nuget_dir				= "$build_dir\NuGet";
 	$sln_file 				= "$base_dir\Brnkly.sln"
 	$release_dir 			= "$base_dir\Release"
 	#$build_number_default	= if ("$assembly_version".length -gt 0) { "$assembly_version" } else { "1.0.7" }
@@ -22,12 +23,11 @@ task Verify45 {
 }
 
 task Clean {
-  remove-item -force -recurse $buildartifacts_dir -ErrorAction SilentlyContinue
-  remove-item -force -recurse $release_dir -ErrorAction SilentlyContinue
+  Remove-Item -Force -Recurse $buildartifacts_dir -ErrorAction SilentlyContinue
+  Remove-Item -Force -Recurse $release_dir -ErrorAction SilentlyContinue
 }
 
 task Init -depends Verify45, Clean {
-
 	if($env:buildlabel -eq $null) {
 		$env:buildlabel = "7"
 	}
@@ -48,19 +48,19 @@ task Compile -depends Init {
 }
 
 task CreateNuGetPackages -depends Compile {
-	$nuget_dir = "$build_dir\NuGet";
-	if (Test-Path $nuget_dir) { Remove-Item -Force -Recurse $nuget_dir; }
+	if (Test-Path $nuget_dir) { Remove-Item -Force -Recurse $nuget_dir; Start-Sleep -Milliseconds 100; }
 	New-Item $nuget_dir -Type Directory | Out-Null;
 
-	New-Item "$nuget_dir\Brnkly\lib\net45" -Type Directory | Out-Null;
-	Copy-Item "$buildartifacts_dir\Brnkly.???" "$nuget_dir\Brnkly\lib\net45";
+	$brnkly = New-NuGetPackager "Brnkly";
+	& $brnkly.CopyDll;
+	& $brnkly.CopyNuspec;
+	& $brnkly.Pack;
 
-	Copy-Item "$base_dir\Brnkly\Brnkly.nuspec" "$nuget_dir\Brnkly";
-	(Get-Content "$nuget_dir\Brnkly\Brnkly.nuspec") |
-		Foreach-Object { $_ -replace ".07", ".$($env:buildlabel)" } |
-		Set-Content "$nuget_dir\Brnkly\Brnkly.nuspec" -Encoding UTF8;
-
-	exec { & "$base_dir\.nuget\nuget.exe" pack "$nuget_dir\Brnkly\Brnkly.nuspec" -OutputDirectory $nuget_dir }
+	$admin = New-NuGetPackager "Brnkly.Admin";
+	& $admin.CopyDll;
+	& $admin.CopyNuspec;
+	& $admin.CopyContent "$base_dir\Brnkly.Admin.Views\Areas\*" "Areas" -Recurse
+	& $admin.Pack;
 }
 
 task Release { 

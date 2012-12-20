@@ -78,6 +78,7 @@
     <Compile Include="StringExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Brnkly.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
