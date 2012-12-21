@@ -119,7 +119,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Brnkly.Admin.nuspec" />
+    <None Include="Brnkly.Raven.Admin.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

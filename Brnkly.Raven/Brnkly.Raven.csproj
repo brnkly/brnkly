@@ -46,34 +46,34 @@
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Raven\AccessMode.cs" />
-    <Compile Include="Raven\AggressiveCachingExtensions.cs" />
-    <Compile Include="Raven\AggressiveCachingSettings.cs" />
-    <Compile Include="Raven\DocumentStoreFactory.cs" />
-    <Compile Include="Raven\DocumentStoreWrapper.cs" />
-    <Compile Include="Raven\IndexingExtensions.cs" />
-    <Compile Include="Raven\IndexingStatistics.cs" />
-    <Compile Include="Raven\Instance.cs" />
-    <Compile Include="Raven\InstanceIndexStats.cs" />
-    <Compile Include="Raven\RavenConfig.cs" />
-    <Compile Include="Raven\RavenHelper.cs" />
-    <Compile Include="Raven\RavenUriExtensions.cs" />
-    <Compile Include="Raven\ReadOnlyListener.cs" />
-    <Compile Include="Raven\ReplicationExtensions.cs" />
-    <Compile Include="Raven\StatsExtensions.cs" />
-    <Compile Include="Raven\Store.cs" />
-    <Compile Include="Raven\StorePropertyExtensions.cs" />
-    <Compile Include="Raven\StoreStats.cs" />
-    <Compile Include="Raven\Tracer.cs" />
+    <Compile Include="AccessMode.cs" />
+    <Compile Include="AggressiveCachingExtensions.cs" />
+    <Compile Include="AggressiveCachingSettings.cs" />
+    <Compile Include="DocumentStoreFactory.cs" />
+    <Compile Include="DocumentStoreWrapper.cs" />
+    <Compile Include="IndexingExtensions.cs" />
+    <Compile Include="IndexingStatistics.cs" />
+    <Compile Include="Instance.cs" />
+    <Compile Include="InstanceIndexStats.cs" />
+    <Compile Include="RavenConfig.cs" />
+    <Compile Include="RavenHelper.cs" />
+    <Compile Include="RavenUriExtensions.cs" />
+    <Compile Include="ReadOnlyListener.cs" />
+    <Compile Include="ReplicationExtensions.cs" />
+    <Compile Include="StatsExtensions.cs" />
+    <Compile Include="Store.cs" />
+    <Compile Include="StorePropertyExtensions.cs" />
+    <Compile Include="StoreStats.cs" />
+    <Compile Include="Tracer.cs" />
     <Compile Include="CodeContractExtensions.cs" />
     <Compile Include="EnumerableExtensions.cs" />
     <Compile Include="ExceptionExtensions.cs" />
-    <Compile Include="Raven\DocumentChangeObserver.cs" />
+    <Compile Include="DocumentChangeObserver.cs" />
     <Compile Include="StringComparisonExtensions.cs" />
     <Compile Include="StringExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Brnkly.nuspec" />
+    <None Include="Brnkly.Raven.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />

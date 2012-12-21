@@ -3,6 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8789005F-4910-4457-8E75-D0B8185EF3FD}"
 	ProjectSection(SolutionItems) = preProject
+		default.ps1 = default.ps1
 		LICENSE.txt = LICENSE.txt
 		NOTICE.txt = NOTICE.txt
 		README.md = README.md

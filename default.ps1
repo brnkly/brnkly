@@ -51,12 +51,12 @@ task CreateNuGetPackages -depends Compile {
 	if (Test-Path $nuget_dir) { Remove-Item -Force -Recurse $nuget_dir; Start-Sleep -Milliseconds 100; }
 	New-Item $nuget_dir -Type Directory | Out-Null;
 
-	$brnkly = New-NuGetPackager "Brnkly";
+	$brnkly = New-NuGetPackager "Brnkly.Raven";
 	& $brnkly.CopyDll;
 	& $brnkly.CopyNuspec;
 	& $brnkly.Pack;
 
-	$admin = New-NuGetPackager "Brnkly.Admin";
+	$admin = New-NuGetPackager "Brnkly.Raven.Admin";
 	& $admin.CopyDll;
 	& $admin.CopyNuspec;
 	& $admin.CopyContent "$base_dir\Brnkly.Admin.Views\Areas\Brnkly" "Areas\Brnkly" -Recurse

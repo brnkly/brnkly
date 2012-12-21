@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Brnkly</id>
+    <id>Brnkly.Raven</id>
     <version>1.0.07-alpha</version>
     <authors>jtbennett</authors>
     <owners>jtbennett</owners>
     <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
     <projectUrl>http://github.com/brnkly/brnkly</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Brnkly is a set of helpers for RavenDB.</description>
+    <description>A set of helpers for RavenDB, allowing apps to be notified at runtime of changes to Raven server locations, aggressive caching time, etc.</description>
     <releaseNotes></releaseNotes>
     <copyright>Copyright 2012 NBCNews.com and Brnkly contributors</copyright>
     <tags>Brnkly RavenDB</tags>
