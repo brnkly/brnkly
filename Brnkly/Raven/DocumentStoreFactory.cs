@@ -62,7 +62,7 @@ namespace Brnkly.Raven
                     store.Changes().ConnectionStatusCahnged += ReadOnlyOpsStore_ConnectionStatusCahnged;
                     store.Changes()
                         .ForDocument(RavenConfig.LiveDocumentId)
-                        .Subscribe(notification => this.ApplyRavenConfig());
+                        .Subscribe(new DocumentChangeObserver(_ => this.ApplyRavenConfig()));
                 };
 
             readOnlyOpsStore = this
@@ -97,7 +97,7 @@ namespace Brnkly.Raven
             }
 
             initializer = initializer ?? (store => store.Initialize());
-            Action<DocumentStoreWrapper> updateInnerStore = 
+            Action<DocumentStoreWrapper> updateInnerStore =
                 wrapper => this.UpdateInnerStore(wrapper, initializer);
             var newStore = new DocumentStoreWrapper(name, accessMode, updateInnerStore);
 
@@ -106,7 +106,7 @@ namespace Brnkly.Raven
         }
 
         private void UpdateInnerStore(
-            DocumentStoreWrapper wrapper, 
+            DocumentStoreWrapper wrapper,
             Action<DocumentStore> innerStoreInitializer)
         {
             DocumentStore existingInnerStore = wrapper.InnerStore;
@@ -221,7 +221,7 @@ namespace Brnkly.Raven
 
                     logger.Debug("Loading Raven config...");
                     LoadRavenConfig();
-                    
+
                     lock (this.allStoreWrappers)
                     {
                         foreach (var wrapper in allStoreWrappers)
@@ -272,11 +272,11 @@ namespace Brnkly.Raven
             string newUrl = (newInnerStore == null) ? null : newInnerStore.Url;
             string message = string.Format(
                 "{0} {1} store Url could not be set to '{2}'. {3}",
-                wrapper.AccessMode, 
-                wrapper.Name, 
+                wrapper.AccessMode,
+                wrapper.Name,
                 newUrl,
-                (wrapper.IsInitialized && !wrapper.InnerStore.WasDisposed) 
-                    ? string.Format("Active Url remains {0}.", wrapper.Url) 
+                (wrapper.IsInitialized && !wrapper.InnerStore.WasDisposed)
+                    ? string.Format("Active Url remains {0}.", wrapper.Url)
                     : "Store has not been initialized.");
             logger.ErrorException(message, exception);
         }
@@ -315,7 +315,7 @@ namespace Brnkly.Raven
                     wrapper.AccessMode == AccessMode.ReadWrite);
             }
 
-            instance = instance ?? 
+            instance = instance ??
                 new Instance
                 {
                     Url = new Uri(this.operationsStoreUrl, wrapper.Name.ToLowerInvariant()),

@@ -44,7 +44,7 @@ namespace Brnkly.Raven
 
             store.Changes()
                 .ForDocument(LiveId)
-                .Subscribe(n => { settings.LoadFromStore(); });
+                .Subscribe(new DocumentChangeObserver(_ => settings.LoadFromStore()));
         }
 
         public void LoadFromStore()
@@ -73,7 +73,7 @@ namespace Brnkly.Raven
             catch (Exception exception)
             {
                 logger.ErrorException(
-                    "Failed to load aggressive caching settings. The previous settings remain in effect.", 
+                    "Failed to load aggressive caching settings. The previous settings remain in effect.",
                     exception);
             }
             finally
