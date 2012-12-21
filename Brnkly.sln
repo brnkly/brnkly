@@ -15,9 +15,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{E62EC5
 		.nuget\packages.config = .nuget\packages.config
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Brnkly", "Brnkly\Brnkly.csproj", "{497A6EC7-BDC6-4B35-886C-0F78A15C91AD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Brnkly.Raven", "Brnkly.Raven\Brnkly.Raven.csproj", "{497A6EC7-BDC6-4B35-886C-0F78A15C91AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Brnkly.Admin", "Brnkly.Admin\Brnkly.Admin.csproj", "{578D57D3-3F72-4958-AA50-0816034F23A3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Brnkly.Raven.Admin", "Brnkly.Raven.Admin\Brnkly.Raven.Admin.csproj", "{578D57D3-3F72-4958-AA50-0816034F23A3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Brnkly.Admin.Views", "Brnkly.Admin.Views\Brnkly.Admin.Views.csproj", "{AA3ED371-918C-429D-BC4F-8DB2DE9AE563}"
 EndProject

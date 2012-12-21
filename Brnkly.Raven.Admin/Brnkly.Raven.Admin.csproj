@@ -7,8 +7,8 @@
     <ProjectGuid>{578D57D3-3F72-4958-AA50-0816034F23A3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Brnkly.Admin</RootNamespace>
-    <AssemblyName>Brnkly.Admin</AssemblyName>
+    <RootNamespace>Brnkly.Raven.Admin</RootNamespace>
+    <AssemblyName>Brnkly.Raven.Admin</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
@@ -123,9 +123,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Brnkly\Brnkly.csproj">
+    <ProjectReference Include="..\Brnkly.Raven\Brnkly.Raven.csproj">
       <Project>{497a6ec7-bdc6-4b35-886c-0f78a15c91ad}</Project>
-      <Name>Brnkly</Name>
+      <Name>Brnkly.Raven</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

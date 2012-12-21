@@ -7,8 +7,8 @@
     <ProjectGuid>{497A6EC7-BDC6-4B35-886C-0F78A15C91AD}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Brnkly</RootNamespace>
-    <AssemblyName>Brnkly</AssemblyName>
+    <RootNamespace>Brnkly.Raven</RootNamespace>
+    <AssemblyName>Brnkly.Raven</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>

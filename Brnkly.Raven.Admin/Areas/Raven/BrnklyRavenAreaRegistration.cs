@@ -8,7 +8,7 @@ namespace Brnkly.Raven.Admin
 {
     public class BrnklyRavenAreaRegistration : AreaRegistration
     {
-        public override string AreaName { get { return "Brnkly"; } }
+        public override string AreaName { get { return "BrnklyRaven"; } }
 
         public override void RegisterArea(AreaRegistrationContext context)
         {
@@ -21,15 +21,15 @@ namespace Brnkly.Raven.Admin
         public void RegisterMvcRoutes(AreaRegistrationContext context)
         {
             context.MapRoute(
-                name: "Brnkly-Default",
-                url: "brnkly/{controller}/{action}/{id}",
+                name: "Brnkly-Raven-Default",
+                url: "brnkly/raven/{action}/{id}",
                 defaults: new { controller = "Raven", action = "Index", id = UrlParameter.Optional });
         }
 
         public void RegisterApiRoutes()
         {
             GlobalConfiguration.Configuration.Routes.MapHttpRoute(
-                name: "Api-Brnkly-Raven-Default",
+                name: "Brnkly-Api-Raven-Default",
                 routeTemplate: "brnkly/api/raven/{controller}/{action}");
         }
 

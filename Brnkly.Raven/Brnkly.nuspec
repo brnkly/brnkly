@@ -10,7 +10,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Brnkly is a set of helpers for RavenDB.</description>
     <releaseNotes></releaseNotes>
-    <copyright>Copyright 2012 NBC News Digital</copyright>
+    <copyright>Copyright 2012 NBCNews.com and Brnkly contributors</copyright>
     <tags>Brnkly RavenDB</tags>
     <dependencies>
       <dependency id="RavenDB.Client" version="2.0" />

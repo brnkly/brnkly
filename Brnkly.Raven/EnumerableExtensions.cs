@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace Brnkly
+namespace Brnkly.Raven
 {
     public static class EnumerableExtensions
     {

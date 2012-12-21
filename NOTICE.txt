@@ -1,5 +1,5 @@
 Brnkly
-Copyright 2012 NBCNews.com
+Copyright 2012 NBCNews.com and Brnkly contributors
 
 This product includes software developed at
 NBCNews.com (http://nbcnews.com).
@@ -35,18 +35,6 @@ THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
 IN THE SOFTWARE.
-
-
-Common Service Locator
------------------
-Website: http://commonservicelocator.codeplex.com/
-License: MS-Pl
-
-
-Enterprise Library
------------------
-Website: http://entlib.codeplex.com/
-License: MS-Pl
 
 
 Json.net
@@ -129,9 +117,3 @@ RavenDB
 Website: http://ravendb.net/
 Copyright 2010 Hibernating rhinos
 License: GNU Affero General Public License (FOSS License Exception)
-
-
-Unity
------------------
-Website: http://unity.codeplex.com/
-License: MS-Pl

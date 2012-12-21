@@ -185,13 +185,13 @@
     <Content Include="Areas\Brnkly\Views\Shared\_TopNav.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Brnkly.Admin\Brnkly.Admin.csproj">
+    <ProjectReference Include="..\Brnkly.Raven.Admin\Brnkly.Raven.Admin.csproj">
       <Project>{578d57d3-3f72-4958-aa50-0816034f23a3}</Project>
-      <Name>Brnkly.Admin</Name>
+      <Name>Brnkly.Raven.Admin</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Brnkly\Brnkly.csproj">
+    <ProjectReference Include="..\Brnkly.Raven\Brnkly.Raven.csproj">
       <Project>{497a6ec7-bdc6-4b35-886c-0f78a15c91ad}</Project>
-      <Name>Brnkly</Name>
+      <Name>Brnkly.Raven</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

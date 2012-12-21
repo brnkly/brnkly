@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace Brnkly
+namespace Brnkly.Raven
 {
     public static class ExceptionExtensions
     {

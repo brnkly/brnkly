@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Brnkly
+namespace Brnkly.Raven
 {
     public struct ContractParameter<T>
     {
