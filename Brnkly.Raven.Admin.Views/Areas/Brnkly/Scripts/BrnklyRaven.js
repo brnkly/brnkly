@@ -481,7 +481,7 @@
             });
         };
 
-        self.delete = function (instanceUrl) {
+        self.deleteMe = function (instanceUrl) {
             $.ajax({
                 url: '/brnkly/api/raven/indexing/delete',
                 type: 'DELETE',
