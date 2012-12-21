@@ -119,13 +119,19 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Areas\Brnkly\Content\bootstrap.min.css" />
     <Content Include="Areas\Brnkly\Content\Brnkly.css">
       <DependentUpon>Brnkly.less</DependentUpon>
     </Content>
     <Content Include="Areas\Brnkly\Content\Brnkly.min.css">
       <DependentUpon>Brnkly.less</DependentUpon>
     </Content>
-    <Content Include="Content\images\ajax-loader.gif" />
+    <Content Include="Content\images\brnkly-ajax-loader.gif" />
+    <Content Include="Areas\Brnkly\Scripts\bootstrap.min.js" />
+    <Content Include="Areas\Brnkly\Scripts\jquery-1.8.2.min.js" />
+    <Content Include="Areas\Brnkly\Scripts\knockout-2.2.0.js" />
+    <Content Include="Areas\Brnkly\Scripts\knockout.mapping-latest.js" />
+    <Content Include="Areas\Brnkly\Scripts\linq.min.js" />
     <Content Include="Areas\Brnkly\Scripts\BrnklyRaven.js" />
     <Content Include="Areas\Brnkly\Scripts\KnockoutBootstrapCheckboxBinding.js" />
     <Content Include="Areas\Brnkly\Scripts\KnockoutBootstrapRadioBinding.js" />
@@ -184,10 +190,6 @@
     <ProjectReference Include="..\Brnkly.Raven.Admin\Brnkly.Raven.Admin.csproj">
       <Project>{578d57d3-3f72-4958-aa50-0816034f23a3}</Project>
       <Name>Brnkly.Raven.Admin</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Brnkly.Raven\Brnkly.Raven.csproj">
-      <Project>{497a6ec7-bdc6-4b35-886c-0f78a15c91ad}</Project>
-      <Name>Brnkly.Raven</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

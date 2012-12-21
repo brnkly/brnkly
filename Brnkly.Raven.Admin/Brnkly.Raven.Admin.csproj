@@ -102,18 +102,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Areas\Raven\BrnklyRavenAreaRegistration.cs" />
-    <Compile Include="Areas\Raven\Controllers\BrnklyApiControllerConfigAttribute.cs" />
-    <Compile Include="Areas\Raven\Controllers\IndexingController.cs" />
-    <Compile Include="Areas\Raven\Controllers\BrnklyApiControllerBase.cs" />
-    <Compile Include="Areas\Raven\Controllers\RavenController.cs" />
-    <Compile Include="Areas\Raven\Controllers\ReplicationController.cs" />
-    <Compile Include="Areas\Raven\Controllers\BrnklyApiControllerActivator.cs" />
-    <Compile Include="Areas\Raven\Models\CopyIndexModel.cs" />
-    <Compile Include="Areas\Raven\Models\IndexModel.cs" />
-    <Compile Include="Areas\Raven\Models\InstanceModel.cs" />
-    <Compile Include="Areas\Raven\Models\RavenConfigModel.cs" />
-    <Compile Include="Areas\Raven\Models\StoreModel.cs" />
+    <Compile Include="BrnklyRavenAreaRegistration.cs" />
+    <Compile Include="Controllers\BrnklyApiControllerConfigAttribute.cs" />
+    <Compile Include="Controllers\IndexingController.cs" />
+    <Compile Include="Controllers\BrnklyApiControllerBase.cs" />
+    <Compile Include="Controllers\RavenController.cs" />
+    <Compile Include="Controllers\ReplicationController.cs" />
+    <Compile Include="Controllers\BrnklyApiControllerActivator.cs" />
+    <Compile Include="Models\CopyIndexModel.cs" />
+    <Compile Include="Models\IndexModel.cs" />
+    <Compile Include="Models\InstanceModel.cs" />
+    <Compile Include="Models\RavenConfigModel.cs" />
+    <Compile Include="Models\StoreModel.cs" />
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>

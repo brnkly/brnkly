@@ -8,7 +8,7 @@ namespace Brnkly.Raven.Admin
 {
     public class BrnklyRavenAreaRegistration : AreaRegistration
     {
-        public override string AreaName { get { return "BrnklyRaven"; } }
+        public override string AreaName { get { return "Brnkly"; } }
 
         public override void RegisterArea(AreaRegistrationContext context)
         {
@@ -38,33 +38,27 @@ namespace Brnkly.Raven.Admin
             var bundles = BundleTable.Bundles;
 
             bundles.Add(
-                new ScriptBundle("~/brnkly/scripts/frameworks")
+                new ScriptBundle("~/scripts/brnkly-js")
                 .Include(
-                    "~/Scripts/jquery-{version}.js",
-                    "~/Scripts/bootstrap.js",
-                    "~/Scripts/knockout-{version}.js",
-                    "~/Scripts/knockout.mapping-latest.js",
-                    "~/Scripts/linq.js"));
-
-            bundles.Add(
-                new ScriptBundle("~/brnkly/scripts/brnkly")
-                .Include(
+                    "~/Areas/Brnkly/Scripts/jquery-{version}.min.js",
+                    "~/Areas/Brnkly/Scripts/bootstrap.js.min",
+                    "~/Areas/Brnkly/Scripts/knockout-{version}.js",
+                    "~/Areas/Brnkly/Scripts/knockout.mapping-latest.js",
+                    "~/Areas/Brnkly/Scripts/linq.min.js",
                     "~/Areas/Brnkly/Scripts/KnockoutBootstrapCheckboxBinding.js",
                     "~/Areas/Brnkly/Scripts/KnockoutBootstrapRadioBinding.js",
                     "~/Areas/Brnkly/Scripts/KnockoutDirtyFlag.js",
                     "~/Areas/Brnkly/Scripts/BrnklyRaven.js"));
 
             bundles.Add(
-                new StyleBundle("~/content/bootstrap")
+                new StyleBundle("~/content/brnkly-css")
                 .Include(
-                    "~/Content/bootstrap.css",
-                    "~/Content/bootstrap-responsive.css"));
+                    "~/Areas/Brnkly/Content/bootstrap.min.css",
+                    "~/Areas/Brnkly/Content/Brnkly.css"));
 
-            bundles.Add(
-                new StyleBundle("~/brnkly/css/brnkly")
-                .Include("~/Areas/Brnkly/Content/Brnkly.css"));
-
+#if DEBUG
             BundleTable.EnableOptimizations = true;
+#endif
         }
 
         public void ConfigureAutoMapper()

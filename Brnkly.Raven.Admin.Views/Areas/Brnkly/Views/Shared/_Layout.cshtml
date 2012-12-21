@@ -4,7 +4,7 @@
         <meta charset="utf-8" />
         <title>@ViewBag.Title</title> 
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        @Styles.Render("~/content/bootstrap", "~/brnkly/css/brnkly")
+        @Styles.Render("~/content/brnkly-css")
     <!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
@@ -17,6 +17,6 @@
             @RenderBody()
         </div>
 
-        @Scripts.Render("~/brnkly/scripts/frameworks", "~/brnkly/scripts/brnkly")
+        @Scripts.Render("~/scripts/brnkly-js")
     </body>
 </html>
