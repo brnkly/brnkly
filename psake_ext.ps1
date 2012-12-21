@@ -41,6 +41,7 @@ function New-NuGetPackager
 		}.GetNewClosure();
 
 		CopyNuspec = {
+			New-Item "$nuget_dir\$projectName" -Type Directory -ErrorAction SilentlyContinue | Out-Null;
 			Copy-Item "$base_dir\$projectName\$($projectName).nuspec" "$nuget_dir\$projectName";
 			(Get-Content "$nuget_dir\$projectName\$($projectName).nuspec") |
 				Foreach-Object { $_ -replace ".07", ".$($env:buildlabel)" } |
