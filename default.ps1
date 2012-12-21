@@ -59,7 +59,7 @@ task CreateNuGetPackages -depends Compile {
 	$admin = New-NuGetPackager "Brnkly.Raven.Admin";
 	& $admin.CopyDll;
 	& $admin.CopyNuspec;
-	& $admin.CopyContent "$base_dir\Brnkly.Admin.Views\Areas\Brnkly" "Areas\Brnkly" -Recurse
+	& $admin.CopyContent "$base_dir\Brnkly.Raven.Admin.Views\Areas\Brnkly" "Areas\Brnkly" -Recurse
 	& $admin.Pack;
 }
 

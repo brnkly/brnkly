@@ -20,7 +20,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Brnkly.Raven", "Brnkly.Rave
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Brnkly.Raven.Admin", "Brnkly.Raven.Admin\Brnkly.Raven.Admin.csproj", "{578D57D3-3F72-4958-AA50-0816034F23A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Brnkly.Admin.Views", "Brnkly.Admin.Views\Brnkly.Admin.Views.csproj", "{AA3ED371-918C-429D-BC4F-8DB2DE9AE563}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Brnkly.Raven.Admin.Views", "Brnkly.Raven.Admin.Views\Brnkly.Raven.Admin.Views.csproj", "{AA3ED371-918C-429D-BC4F-8DB2DE9AE563}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
