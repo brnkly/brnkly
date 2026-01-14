@@ -1,6 +1,8 @@
 Brnkly
 ==============
 
+> OBSOLETE. This repo is very old, very out of date, and archived.
+
 What is Brnkly?
 --------------
 Brnkly is a set of code originally developed at NBCNews.com.  It includes:
